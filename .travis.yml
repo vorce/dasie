@@ -1,0 +1,8 @@
+language: elixir
+elixir:
+  - 1.6
+script:
+  - mix coveralls
+notifications:
+  recipients:
+    - joel@vorce.se
