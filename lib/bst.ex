@@ -7,6 +7,7 @@ defmodule Dasie.BST do
             left: nil,
             right: nil
 
+  @doc "Create a new Binary search tree"
   def new(data \\ nil)
 
   def new([h | tail]) do
@@ -19,7 +20,8 @@ defmodule Dasie.BST do
     %__MODULE__{data: data}
   end
 
-  def insert(%__MODULE__{data: nil, left: nil, right: nil} = tree, data) do
+  @doc "Insert a node into the tree"
+  def insert(%__MODULE__{data: nil, left: nil, right: nil} = _tree, data) do
     %__MODULE__{data: data}
   end
 
@@ -39,6 +41,7 @@ defmodule Dasie.BST do
     %__MODULE__{tree | right: insert(right, new_data)}
   end
 
+  @doc "Finds an element in the tree, returns nil if it doesn't exist"
   def find(%__MODULE__{data: data, left: nil, right: nil}, element) when data != element, do: nil
   def find(%__MODULE__{data: data} = tree, element) when data == element, do: tree
 
@@ -50,6 +53,7 @@ defmodule Dasie.BST do
     find(right, element)
   end
 
+  @doc "Deletes an element in the tree"
   def delete(%__MODULE__{data: data, left: nil, right: nil}, element) when data == element do
     nil
   end
@@ -62,7 +66,7 @@ defmodule Dasie.BST do
     right
   end
 
-  def delete(%__MODULE__{data: data, left: left, right: right} = tree, element)
+  def delete(%__MODULE__{data: data, right: right} = tree, element)
       when data == element do
     successor = smallest(right)
     %__MODULE__{tree | data: successor.data, right: delete(right, successor.data)}
@@ -76,6 +80,6 @@ defmodule Dasie.BST do
     %__MODULE__{tree | right: delete(right, element)}
   end
 
-  defp smallest(%__MODULE__{data: data, left: nil} = tree), do: tree
+  defp smallest(%__MODULE__{left: nil} = tree), do: tree
   defp smallest(%__MODULE__{left: left}), do: smallest(left)
 end

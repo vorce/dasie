@@ -11,10 +11,12 @@ defmodule Dasie.RedBlackTree do
             right: nil,
             color: :black
 
+  @doc "Create a new red-black tree"
   def new(data \\ nil) do
     %__MODULE__{data: data}
   end
 
+  @doc "Turns a node's color into :black"
   def blacken(%__MODULE__{color: :red} = node), do: %__MODULE__{node | color: :black}
   def blacken(%__MODULE__{color: :black} = node), do: node
 
@@ -105,5 +107,5 @@ defmodule Dasie.RedBlackTree do
   end
 
   @doc "Not implemented yet"
-  def delete(tree, element), do: raise("Not implemented")
+  def delete(_tree, _element), do: raise("Not implemented")
 end

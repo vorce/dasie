@@ -72,10 +72,6 @@ defmodule Dasie.RedBlackTreeTest do
     end
 
     test "does not change already balanced tree" do
-      z = %RedBlackTree{RedBlackTree.new(9) | color: :red}
-      y = %RedBlackTree{RedBlackTree.new(8) | right: z, color: :red}
-      x = %RedBlackTree{RedBlackTree.new(7) | right: y, color: :black}
-
       assert RedBlackTree.balance(balanced_rbt()) == balanced_rbt()
     end
 
