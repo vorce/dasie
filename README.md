@@ -9,5 +9,8 @@ Implementations of some basic data structures for fun and learning. I don't reco
 - [Linked list](lib/linked_list.ex)
 - [Binary Search Tree](lib/bst.ex)
 - [Trie / prefix tree](lib/trie.ex)
+- [Red-black Tree](lib/red_black_tree.ex) `*`
 
 Example usage is in the [tests](test/).
+
+`*` = Unfinished/WIP
