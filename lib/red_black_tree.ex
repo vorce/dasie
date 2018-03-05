@@ -2,8 +2,9 @@ defmodule Dasie.RedBlackTree do
   @moduledoc """
   Invariant 1. Every red node have two black children.
   Invariant 2. Every path from the root to a leaf contains the same number of black nodes.
+  Invariant 3. The root and leaves of the tree are black.
 
-  Delete is still not implemented
+  Reference implementation: https://functional.works-hub.com/learn/Persistent-Red-Black-Trees-in-Haskell
   """
 
   defstruct data: nil,
@@ -106,6 +107,179 @@ defmodule Dasie.RedBlackTree do
     node
   end
 
-  @doc "Not implemented yet"
-  def delete(_tree, _element), do: raise("Not implemented")
+  @doc "Deletes an element in the tree"
+  def delete(tree, element) do
+    element |> do_delete(tree) |> blacken()
+  end
+
+  defp do_delete(element, %__MODULE__{data: data} = node) when element < data do
+    delete_left(element, node)
+  end
+
+  defp do_delete(element, %__MODULE__{data: data} = node) when element > data do
+    delete_right(element, node)
+  end
+
+  defp do_delete(element, %__MODULE__{data: data} = node) when element == data do
+    fuse(node.left, node.right)
+  end
+
+  def delete_left(element, %__MODULE__{color: :red} = node) do
+    %__MODULE__{node | left: do_delete(element, node.left)}
+  end
+
+  def delete_left(element, %__MODULE__{color: :black} = node) do
+    balance_left(%__MODULE__{node | left: do_delete(element, node.left)})
+  end
+
+  def delete_right(element, %__MODULE__{color: :red} = node) do
+    %__MODULE__{node | right: do_delete(element, node.right)}
+  end
+
+  def delete_right(element, %__MODULE__{color: :black} = node) do
+    balance_right(%__MODULE__{node | right: do_delete(element, node.right)})
+  end
+
+  def fuse(nil, right) do
+    right
+  end
+
+  def fuse(left, nil) do
+    left
+  end
+
+  def fuse(%__MODULE__{color: :black} = left, %__MODULE__{color: :red} = right) do
+    %__MODULE__{right | left: fuse(left, right.left)}
+  end
+
+  def fuse(%__MODULE__{color: :red} = left, %__MODULE__{color: :black} = right) do
+    %__MODULE__{left | right: fuse(left.right, right)}
+  end
+
+  def fuse(
+        %__MODULE__{color: :red} = left,
+        %__MODULE__{color: :red} = right
+      ) do
+    fused = fuse(left.right, right.left)
+
+    case fused do
+      %__MODULE__{color: :red} = red ->
+        %__MODULE__{
+          red
+          | left: %__MODULE__{left | right: red.left},
+            right: %__MODULE__{right | left: red.right}
+        }
+
+      %__MODULE__{color: :black} = black ->
+        %__MODULE__{left | right: %__MODULE__{right | left: black}}
+    end
+  end
+
+  # This is probably the case i'm the least confident is doing the right thing
+  # at all times... maybe we can even get rid of it?
+  def fuse(
+        %__MODULE__{color: :black, right: nil} = left,
+        %__MODULE__{color: :black, left: nil} = right
+      ) do
+    balance_right(%__MODULE__{right | left: left})
+  end
+
+  def fuse(
+        %__MODULE__{color: :black} = left,
+        %__MODULE__{color: :black} = right
+      ) do
+    fused = fuse(left.right, right.left)
+
+    case fused do
+      %__MODULE__{color: :red} = red ->
+        %__MODULE__{
+          red
+          | left: %__MODULE__{left | right: red.left},
+            right: %__MODULE__{right | left: red.right}
+        }
+
+      %__MODULE__{color: :black} = black ->
+        balance_left(%__MODULE__{left | right: %__MODULE__{right | left: black}})
+    end
+  end
+
+  def balance_left(%__MODULE__{color: :black, left: %__MODULE__{color: :red} = x} = y) do
+    %__MODULE__{y | color: :red, left: %__MODULE__{x | color: :black}}
+  end
+
+  def balance_left(
+        %__MODULE__{
+          color: :black,
+          right: %__MODULE__{color: :black} = z
+        } = y
+      ) do
+    balance(%__MODULE__{y | right: %__MODULE__{z | color: :red}})
+  end
+
+  def balance_left(
+        %__MODULE__{
+          color: :black,
+          right:
+            %__MODULE__{
+              color: :red,
+              left: %__MODULE__{color: :black} = u,
+              right: %__MODULE__{color: :black}
+            } = z
+        } = y
+      ) do
+    %__MODULE__{
+      u
+      | color: :red,
+        left: %__MODULE__{y | right: u.left},
+        right:
+          balance(%__MODULE__{
+            z
+            | color: :black,
+              left: u.right,
+              right: %__MODULE__{z.right | color: :red}
+          })
+    }
+  end
+
+  def balance_left(node), do: node
+
+  def balance_right(%__MODULE__{color: :black, right: %__MODULE__{color: :red} = x} = y) do
+    %__MODULE__{y | color: :red, right: %__MODULE__{x | color: :black}}
+  end
+
+  def balance_right(
+        %__MODULE__{
+          color: :black,
+          left: %__MODULE__{color: :black} = z
+        } = y
+      ) do
+    balance(%__MODULE__{y | left: %__MODULE__{z | color: :red}})
+  end
+
+  def balance_right(
+        %__MODULE__{
+          color: :black,
+          left:
+            %__MODULE__{
+              color: :red,
+              left: %__MODULE__{color: :black},
+              right: %__MODULE__{color: :black} = u
+            } = z
+        } = y
+      ) do
+    %__MODULE__{
+      u
+      | color: :red,
+        left:
+          balance(%__MODULE__{
+            z
+            | color: :black,
+              left: %__MODULE__{z.left | color: :red},
+              right: u.left
+          }),
+        right: %__MODULE__{y | left: u.right}
+    }
+  end
+
+  def balance_right(node), do: node
 end

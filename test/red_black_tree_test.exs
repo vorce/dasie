@@ -100,6 +100,8 @@ defmodule Dasie.RedBlackTreeTest do
                    right: nil
                  }
              }
+
+      assert every_red_node_has_black_children?(result)
     end
 
     test "handles larger element" do
@@ -118,6 +120,8 @@ defmodule Dasie.RedBlackTreeTest do
                    right: nil
                  }
              }
+
+      assert every_red_node_has_black_children?(result)
     end
 
     test "handles equal element" do
@@ -172,8 +176,366 @@ defmodule Dasie.RedBlackTreeTest do
                  }
                }
              }
+
+      assert every_red_node_has_black_children?(result)
     end
   end
+
+  describe "balance_left/1" do
+    test "black(left: red) -> red(left: black)" do
+      root = RedBlackTree.new(4)
+      rbt = RedBlackTree.insert(root, 2)
+
+      assert RedBlackTree.balance_left(rbt) == %RedBlackTree{
+               color: :red,
+               data: 4,
+               left: %RedBlackTree{
+                 color: :black,
+                 data: 2
+               }
+             }
+    end
+
+    test "black(left: black, right: black) -> balanced: black(left: black, right: red)" do
+      left = RedBlackTree.new(2)
+      right = RedBlackTree.new(6)
+      rbt = %{RedBlackTree.new(4) | left: left, right: right}
+
+      assert RedBlackTree.balance_left(rbt) == %RedBlackTree{
+               color: :black,
+               data: 4,
+               left: %RedBlackTree{
+                 color: :black,
+                 data: 2
+               },
+               right: %RedBlackTree{
+                 color: :red,
+                 data: 6
+               }
+             }
+    end
+
+    test "black(left: black, right: red) -> red(left: black, right: black)" do
+      left = RedBlackTree.new(2)
+      r_l = RedBlackTree.new(5)
+      r_r = RedBlackTree.new(8)
+      right = %{RedBlackTree.new(6) | color: :red, left: r_l, right: r_r}
+      rbt = %{RedBlackTree.new(4) | left: left, right: right}
+
+      assert RedBlackTree.balance_left(rbt) == %RedBlackTree{
+               color: :red,
+               data: 5,
+               left: %RedBlackTree{
+                 color: :black,
+                 data: 4,
+                 left: left
+               },
+               right: %RedBlackTree{
+                 color: :black,
+                 data: 6,
+                 right: %RedBlackTree{color: :red, data: 8}
+               }
+             }
+    end
+  end
+
+  describe "balance_right/1" do
+    test "black(right: red) -> red(right: black)" do
+      root = RedBlackTree.new(4)
+      rbt = RedBlackTree.insert(root, 6)
+
+      assert RedBlackTree.balance_right(rbt) == %RedBlackTree{
+               color: :red,
+               data: 4,
+               right: %RedBlackTree{
+                 color: :black,
+                 data: 6
+               }
+             }
+    end
+
+    test "black(left: black, right: black) -> balanced: black(left: red, right: black)" do
+      left = RedBlackTree.new(2)
+      right = RedBlackTree.new(6)
+      rbt = %{RedBlackTree.new(4) | left: left, right: right}
+
+      assert RedBlackTree.balance_right(rbt) == %RedBlackTree{
+               color: :black,
+               data: 4,
+               left: %RedBlackTree{
+                 color: :red,
+                 data: 2
+               },
+               right: %RedBlackTree{
+                 color: :black,
+                 data: 6
+               }
+             }
+    end
+
+    test "black(left: red, right: black) -> red(left: black, right: black)" do
+      l_l = RedBlackTree.new(1)
+      l_r = RedBlackTree.new(3)
+      left = %{RedBlackTree.new(2) | color: :red, left: l_l, right: l_r}
+      right = RedBlackTree.new(6)
+      rbt = %{RedBlackTree.new(4) | left: left, right: right}
+
+      assert RedBlackTree.balance_right(rbt) == %RedBlackTree{
+               color: :red,
+               data: 3,
+               left: %RedBlackTree{
+                 color: :black,
+                 data: 2,
+                 left: %RedBlackTree{color: :red, data: 1}
+               },
+               right: %RedBlackTree{
+                 color: :black,
+                 data: 4,
+                 right: right
+               }
+             }
+    end
+  end
+
+  describe "delete_left/2" do
+    test "red root" do
+      left = RedBlackTree.new(2)
+      right = RedBlackTree.new(6)
+      rbt = %{RedBlackTree.new(4) | color: :red, left: left, right: right}
+
+      assert RedBlackTree.delete_left(2, rbt) == %RedBlackTree{
+               color: :red,
+               data: 4,
+               right: %RedBlackTree{color: :black, data: 6}
+             }
+    end
+
+    test "black root" do
+      left = %{RedBlackTree.new(2) | color: :red}
+      right = %{RedBlackTree.new(6) | color: :red}
+      rbt = %{RedBlackTree.new(4) | left: left, right: right}
+
+      assert RedBlackTree.delete_left(2, rbt) == %RedBlackTree{
+               color: :black,
+               data: 4,
+               right: %RedBlackTree{
+                 color: :red,
+                 data: 6
+               }
+             }
+    end
+  end
+
+  describe "delete_right/2" do
+    test "red root" do
+      left = RedBlackTree.new(2)
+      right = RedBlackTree.new(6)
+      rbt = %RedBlackTree{RedBlackTree.new(4) | color: :red, left: left, right: right}
+
+      assert RedBlackTree.delete_right(6, rbt) == %RedBlackTree{
+               color: :red,
+               data: 4,
+               left: %RedBlackTree{color: :black, data: 2}
+             }
+    end
+
+    test "black root" do
+      left = %{RedBlackTree.new(2) | color: :red}
+      right = %{RedBlackTree.new(6) | color: :red}
+      rbt = %{RedBlackTree.new(4) | left: left, right: right}
+
+      assert RedBlackTree.delete_right(6, rbt) == %RedBlackTree{
+               color: :black,
+               data: 4,
+               left: %RedBlackTree{
+                 color: :red,
+                 data: 2
+               }
+             }
+    end
+  end
+
+  describe "fuse/2" do
+    test "black red roots" do
+      left = %RedBlackTree{
+        RedBlackTree.new(2)
+        | right: %RedBlackTree{RedBlackTree.new(3) | color: :red}
+      }
+
+      right = %{
+        RedBlackTree.new(6)
+        | color: :red,
+          left: RedBlackTree.new(5),
+          right: RedBlackTree.new(7)
+      }
+
+      assert RedBlackTree.fuse(left, right) == %RedBlackTree{
+               color: :red,
+               data: 6,
+               left: %RedBlackTree{
+                 color: :red,
+                 data: 3,
+                 left: %RedBlackTree{
+                   color: :black,
+                   data: 2
+                 },
+                 right: %RedBlackTree{
+                   color: :black,
+                   data: 5
+                 }
+               },
+               right: %RedBlackTree{
+                 color: :black,
+                 data: 7
+               }
+             }
+    end
+
+    test "red black roots" do
+      left = %RedBlackTree{
+        RedBlackTree.new(2)
+        | color: :red,
+          left: RedBlackTree.new(1),
+          right: RedBlackTree.new(3)
+      }
+
+      right = %RedBlackTree{
+        RedBlackTree.new(6)
+        | left: %RedBlackTree{RedBlackTree.new(5) | color: :red}
+      }
+
+      assert RedBlackTree.fuse(left, right) == %RedBlackTree{
+               color: :red,
+               data: 2,
+               left: %RedBlackTree{
+                 color: :black,
+                 data: 1
+               },
+               right: %RedBlackTree{
+                 color: :red,
+                 data: 5,
+                 left: %RedBlackTree{
+                   color: :black,
+                   data: 3
+                 },
+                 right: %RedBlackTree{
+                   color: :black,
+                   data: 6
+                 }
+               }
+             }
+    end
+
+    test "black black roots" do
+      left = %RedBlackTree{
+        RedBlackTree.new(2)
+        | right: %RedBlackTree{RedBlackTree.new(3) | color: :red}
+      }
+
+      right = %RedBlackTree{
+        RedBlackTree.new(7)
+        | left: RedBlackTree.new(6)
+      }
+
+      assert RedBlackTree.fuse(left, right) == %RedBlackTree{
+               color: :red,
+               data: 3,
+               left: %RedBlackTree{
+                 color: :black,
+                 data: 2
+               },
+               right: %RedBlackTree{
+                 color: :black,
+                 data: 7,
+                 left: %RedBlackTree{
+                   color: :black,
+                   data: 6
+                 }
+               }
+             }
+    end
+
+    test "red red roots" do
+      left = %RedBlackTree{
+        RedBlackTree.new(2)
+        | color: :red,
+          right: RedBlackTree.new(3)
+      }
+
+      right = %RedBlackTree{
+        RedBlackTree.new(7)
+        | color: :red,
+          left: %RedBlackTree{RedBlackTree.new(6) | color: :red}
+      }
+
+      assert RedBlackTree.fuse(left, right) == %RedBlackTree{
+               color: :red,
+               data: 6,
+               left: %RedBlackTree{
+                 color: :red,
+                 data: 2,
+                 right: %RedBlackTree{
+                   color: :black,
+                   data: 3
+                 }
+               },
+               right: %RedBlackTree{
+                 color: :red,
+                 data: 7
+               }
+             }
+    end
+  end
+
+  describe "delete/2" do
+    test "remove from left" do
+      root = RedBlackTree.new(4)
+      rbt = RedBlackTree.insert(root, 2)
+      assert RedBlackTree.delete(rbt, 2) == root
+    end
+
+    test "remove from right" do
+      root = RedBlackTree.new(4)
+      rbt = RedBlackTree.insert(root, 6)
+
+      assert RedBlackTree.delete(rbt, 6) == root
+    end
+  end
+
+  test "bigger example" do
+    rbt =
+      RedBlackTree.new(4)
+      |> RedBlackTree.insert(6)
+      |> RedBlackTree.insert(24)
+      |> RedBlackTree.insert(150)
+      |> RedBlackTree.insert(2)
+      |> RedBlackTree.insert(13)
+      |> RedBlackTree.insert(3)
+      |> RedBlackTree.insert(1)
+      |> RedBlackTree.insert(200)
+      |> RedBlackTree.insert(99)
+      |> RedBlackTree.insert(12)
+
+    assert every_red_node_has_black_children?(rbt)
+    assert all_paths_have_same_black_nodes?(rbt)
+
+    rbt2 =
+      rbt
+      |> RedBlackTree.delete(13)
+
+    assert every_red_node_has_black_children?(rbt2)
+    assert all_paths_have_same_black_nodes?(rbt2)
+
+    rbt3 =
+      rbt2
+      |> RedBlackTree.delete(150)
+      |> RedBlackTree.delete(24)
+
+    assert every_red_node_has_black_children?(rbt3)
+    assert all_paths_have_same_black_nodes?(rbt3)
+  end
+
+  # TODO Write some property based tests!
 
   defp balanced_rbt() do
     bx = %RedBlackTree{RedBlackTree.new(7) | color: :black}
@@ -181,5 +543,65 @@ defmodule Dasie.RedBlackTreeTest do
     %RedBlackTree{RedBlackTree.new(8) | color: :red, left: bx, right: bz}
   end
 
-  # TODO: Implement invariant checking methods!
+  def every_red_node_has_black_children?(%RedBlackTree{
+        color: :red,
+        right: %RedBlackTree{color: :red}
+      }) do
+    false
+  end
+
+  def every_red_node_has_black_children?(%RedBlackTree{
+        color: :red,
+        left: %RedBlackTree{color: :red}
+      }) do
+    false
+  end
+
+  def every_red_node_has_black_children?(%RedBlackTree{color: :black} = node) do
+    every_red_node_has_black_children?(node.left) &&
+      every_red_node_has_black_children?(node.right)
+  end
+
+  def every_red_node_has_black_children?(_) do
+    true
+  end
+
+  def all_paths_have_same_black_nodes?(%RedBlackTree{} = tree) do
+    counts =
+      count_black_nodes_to_leaf(tree, 0)
+      |> List.flatten()
+
+    first = List.first(counts)
+    all_equal? = Enum.all?(counts, fn count -> count == first end)
+
+    unless all_equal?,
+      do:
+        IO.inspect(
+          tree,
+          label:
+            "Tree violates invariant: Every path from the root to a leaf contains the same number of black nodes"
+        )
+
+    all_equal?
+  end
+
+  def count_black_nodes_to_leaf(%RedBlackTree{} = tree, acc) do
+    counter =
+      case tree.color do
+        :black ->
+          1
+
+        :red ->
+          0
+      end
+
+    [
+      count_black_nodes_to_leaf(tree.left, acc + counter),
+      count_black_nodes_to_leaf(tree.right, acc + counter)
+    ]
+  end
+
+  def count_black_nodes_to_leaf(nil, acc) do
+    acc
+  end
 end
