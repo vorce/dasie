@@ -2,7 +2,7 @@ language: elixir
 elixir:
   - 1.6
 script:
-  - mix coveralls
+  - "MIX_ENV=test mix do deps.get, test && mix compile && mix coveralls.travis"
 notifications:
   recipients:
     - joel@vorce.se
