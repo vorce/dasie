@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/vorce/dasie.svg?branch=master)](https://travis-ci.org/vorce/dasie)
+[![Build Status](https://travis-ci.org/vorce/dasie.svg?branch=master)](https://travis-ci.org/vorce/dasie) [![Coverage Status](https://coveralls.io/repos/github/vorce/dasie/badge.svg?branch=master)](https://coveralls.io/github/vorce/dasie?branch=master)
 
 # Dasie
 
