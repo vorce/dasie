@@ -12,7 +12,14 @@ Implementations of some basic data structures for fun and learning. I don't reco
 - [Binary Search Tree](lib/bst.ex)
 - [Trie / prefix tree](lib/trie.ex)
 - [Red-black Tree](lib/red_black_tree.ex)
+- [Sorted set](lib/sorted_set.ex)
 
 Example usage is in the [tests](test/).
+
+### Next up
+
+- [ ] Treap (https://www.cs.cornell.edu/courses/cs312/2003sp/lectures/lec26.html)
+- [ ] Property based tests
+- [ ] Implement some protocols?
 
 `*` = Unfinished/WIP

@@ -4,7 +4,10 @@ defmodule Dasie.RedBlackTree do
   Invariant 2. Every path from the root to a leaf contains the same number of black nodes.
   Invariant 3. The root and leaves of the tree are black.
 
-  Reference implementation: https://functional.works-hub.com/learn/Persistent-Red-Black-Trees-in-Haskell
+  References:
+
+  - http://www.cs.ox.ac.uk/ralf.hinze/WG2.8/32/slides/red-black-pearl.pdf
+  - https://functional.works-hub.com/learn/Persistent-Red-Black-Trees-in-Haskell
   """
 
   defstruct data: nil,
@@ -20,16 +23,21 @@ defmodule Dasie.RedBlackTree do
   @doc "Turns a node's color into :black"
   def blacken(%__MODULE__{color: :red} = node), do: %__MODULE__{node | color: :black}
   def blacken(%__MODULE__{color: :black} = node), do: node
+  def blacken(nil), do: nil
 
   @doc "Checks if an element is in the tree or not"
-  def member?(%__MODULE__{data: data}, element) when data == element, do: true
-  def member?(%__MODULE__{left: nil, right: nil}, _element), do: false
+  def member?(node, element, compare_fn \\ &default_compare_function/2)
 
-  def member?(%__MODULE__{right: right, data: data}, element) when element > data,
-    do: member?(right, element)
+  def member?(%__MODULE__{} = node, element, compare_fn) do
+    case compare_fn.(element, node.data) do
+      1 -> member?(node.right, element, compare_fn)
+      0 -> true
+      -1 -> member?(node.left, element, compare_fn)
+    end
+  end
 
-  def member?(%__MODULE__{left: left, data: data}, element) when element < data,
-    do: member?(left, element)
+  def member?(%__MODULE__{left: nil, right: nil}, _element, _compare_fn), do: false
+  def member?(nil, _element, _compare_fn), do: false
 
   @doc "balance a sub-tree to keep invariant 1"
   # black(left: red(left: red)) -> red(left(black), right(black))
@@ -87,57 +95,67 @@ defmodule Dasie.RedBlackTree do
   def balance(node), do: node
 
   @doc "Insert an element into the tree"
-  def insert(tree, element) do
-    element |> do_insert(tree) |> blacken()
+  def insert(tree, element, compare_fn \\ &default_compare_function/2) do
+    element |> do_insert(tree, compare_fn) |> blacken()
   end
 
-  defp do_insert(element, nil) do
+  defp do_insert(element, nil, _compare_fn) do
     %__MODULE__{new(element) | color: :red}
   end
 
-  defp do_insert(element, %__MODULE__{data: data} = node) when element < data do
-    balance(%__MODULE__{node | left: do_insert(element, node.left)})
+  defp do_insert(element, %__MODULE__{data: data} = node, compare_fn) do
+    case compare_fn.(element, data) do
+      1 ->
+        balance(%__MODULE__{node | right: do_insert(element, node.right, compare_fn)})
+
+      0 ->
+        %__MODULE__{node | data: element}
+
+      -1 ->
+        balance(%__MODULE__{node | left: do_insert(element, node.left, compare_fn)})
+    end
   end
 
-  defp do_insert(element, %__MODULE__{data: data} = node) when element > data do
-    balance(%__MODULE__{node | right: do_insert(element, node.right)})
-  end
-
-  defp do_insert(element, %__MODULE__{data: data} = node) when element == data do
-    node
+  def default_compare_function(data1, data2) do
+    cond do
+      data1 > data2 -> 1
+      data1 == data2 -> 0
+      data1 < data2 -> -1
+    end
   end
 
   @doc "Deletes an element in the tree"
-  def delete(tree, element) do
-    element |> do_delete(tree) |> blacken()
+  def delete(tree, element, compare_fn \\ &default_compare_function/2) do
+    element |> do_delete(tree, compare_fn) |> blacken()
   end
 
-  defp do_delete(element, %__MODULE__{data: data} = node) when element < data do
-    delete_left(element, node)
+  defp do_delete(element, %__MODULE__{data: data} = node, compare_fn) do
+    case compare_fn.(element, data) do
+      1 ->
+        delete_right(element, node, compare_fn)
+
+      0 ->
+        fuse(node.left, node.right)
+
+      -1 ->
+        delete_left(element, node, compare_fn)
+    end
   end
 
-  defp do_delete(element, %__MODULE__{data: data} = node) when element > data do
-    delete_right(element, node)
+  def delete_left(element, %__MODULE__{color: :red} = node, compare_fn) do
+    %__MODULE__{node | left: do_delete(element, node.left, compare_fn)}
   end
 
-  defp do_delete(element, %__MODULE__{data: data} = node) when element == data do
-    fuse(node.left, node.right)
+  def delete_left(element, %__MODULE__{color: :black} = node, compare_fn) do
+    balance_left(%__MODULE__{node | left: do_delete(element, node.left, compare_fn)})
   end
 
-  def delete_left(element, %__MODULE__{color: :red} = node) do
-    %__MODULE__{node | left: do_delete(element, node.left)}
+  def delete_right(element, %__MODULE__{color: :red} = node, compare_fn) do
+    %__MODULE__{node | right: do_delete(element, node.right, compare_fn)}
   end
 
-  def delete_left(element, %__MODULE__{color: :black} = node) do
-    balance_left(%__MODULE__{node | left: do_delete(element, node.left)})
-  end
-
-  def delete_right(element, %__MODULE__{color: :red} = node) do
-    %__MODULE__{node | right: do_delete(element, node.right)}
-  end
-
-  def delete_right(element, %__MODULE__{color: :black} = node) do
-    balance_right(%__MODULE__{node | right: do_delete(element, node.right)})
+  def delete_right(element, %__MODULE__{color: :black} = node, compare_fn) do
+    balance_right(%__MODULE__{node | right: do_delete(element, node.right, compare_fn)})
   end
 
   def fuse(nil, right) do
