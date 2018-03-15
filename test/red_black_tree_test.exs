@@ -23,7 +23,7 @@ defmodule Dasie.RedBlackTreeTest do
   end
 
   describe "member?/2" do
-    test "returns false if element does is not in the tree" do
+    test "returns false if element is not in the tree" do
       node = %RedBlackTree{RedBlackTree.new(3) | color: :red}
       root = %RedBlackTree{RedBlackTree.new(2) | right: node}
 
@@ -303,11 +303,12 @@ defmodule Dasie.RedBlackTreeTest do
       right = RedBlackTree.new(6)
       rbt = %{RedBlackTree.new(4) | color: :red, left: left, right: right}
 
-      assert RedBlackTree.delete_left(2, rbt) == %RedBlackTree{
-               color: :red,
-               data: 4,
-               right: %RedBlackTree{color: :black, data: 6}
-             }
+      assert RedBlackTree.delete_left(2, rbt, &RedBlackTree.default_compare_function/2) ==
+               %RedBlackTree{
+                 color: :red,
+                 data: 4,
+                 right: %RedBlackTree{color: :black, data: 6}
+               }
     end
 
     test "black root" do
@@ -315,14 +316,15 @@ defmodule Dasie.RedBlackTreeTest do
       right = %{RedBlackTree.new(6) | color: :red}
       rbt = %{RedBlackTree.new(4) | left: left, right: right}
 
-      assert RedBlackTree.delete_left(2, rbt) == %RedBlackTree{
-               color: :black,
-               data: 4,
-               right: %RedBlackTree{
-                 color: :red,
-                 data: 6
+      assert RedBlackTree.delete_left(2, rbt, &RedBlackTree.default_compare_function/2) ==
+               %RedBlackTree{
+                 color: :black,
+                 data: 4,
+                 right: %RedBlackTree{
+                   color: :red,
+                   data: 6
+                 }
                }
-             }
     end
   end
 
@@ -332,11 +334,12 @@ defmodule Dasie.RedBlackTreeTest do
       right = RedBlackTree.new(6)
       rbt = %RedBlackTree{RedBlackTree.new(4) | color: :red, left: left, right: right}
 
-      assert RedBlackTree.delete_right(6, rbt) == %RedBlackTree{
-               color: :red,
-               data: 4,
-               left: %RedBlackTree{color: :black, data: 2}
-             }
+      assert RedBlackTree.delete_right(6, rbt, &RedBlackTree.default_compare_function/2) ==
+               %RedBlackTree{
+                 color: :red,
+                 data: 4,
+                 left: %RedBlackTree{color: :black, data: 2}
+               }
     end
 
     test "black root" do
@@ -344,14 +347,15 @@ defmodule Dasie.RedBlackTreeTest do
       right = %{RedBlackTree.new(6) | color: :red}
       rbt = %{RedBlackTree.new(4) | left: left, right: right}
 
-      assert RedBlackTree.delete_right(6, rbt) == %RedBlackTree{
-               color: :black,
-               data: 4,
-               left: %RedBlackTree{
-                 color: :red,
-                 data: 2
+      assert RedBlackTree.delete_right(6, rbt, &RedBlackTree.default_compare_function/2) ==
+               %RedBlackTree{
+                 color: :black,
+                 data: 4,
+                 left: %RedBlackTree{
+                   color: :red,
+                   data: 2
+                 }
                }
-             }
     end
   end
 

@@ -3,6 +3,12 @@ defmodule TrieTest do
 
   alias Dasie.Trie
 
+  describe "new" do
+    test "empty trie" do
+      Trie.new() == %Trie{}
+    end
+  end
+
   describe "insert/2" do
     test "insert word" do
       assert Trie.insert(Trie.new(), "foo") == %Trie{
@@ -100,7 +106,7 @@ defmodule TrieTest do
     end
   end
 
-  describe "all_suffixes/2" do
+  describe "valid_words/2" do
     test "returns all suffixes for the prefix" do
       trie =
         Trie.new()
@@ -155,6 +161,30 @@ defmodule TrieTest do
       updated_trie = Trie.delete(trie, "hello")
 
       assert List.first(updated_trie.children).count == 1
+    end
+  end
+
+  describe "child/2" do
+    test "returns matching child" do
+      child =
+        Trie.new()
+        |> Trie.insert("hello")
+        |> Trie.insert("hey")
+        |> Trie.child("h")
+        |> Trie.child("e")
+
+      assert child.data == "e"
+      assert child.count == 2
+      refute child.terminates?
+    end
+
+    test "returns nil for unknown child" do
+      child =
+        Trie.new()
+        |> Trie.insert("hello")
+        |> Trie.child("x")
+
+      assert child == nil
     end
   end
 end
