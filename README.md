@@ -21,7 +21,7 @@ Example usage is in the [tests](test/).
 - [ ] Treap (https://www.cs.cornell.edu/courses/cs312/2003sp/lectures/lec26.html)
 - [ ] Property based tests
 - [ ] Implement some protocols?
-- [ ] Cuckoo filter (https://www.cs.cmu.edu/%7Edga/papers/cuckoo-conext2014.pdf https://github.com/bdupras/guava-probably/blob/master/src/main/java/com/duprasville/guava/probably/CuckooFilter.java https://github.com/seiflotfy/cuckoofilter/blob/master/cuckoofilter.go)
+- [ ] Cuckoo filter (https://www.cs.cmu.edu/%7Edga/papers/cuckoo-conext2014.pdf https://github.com/bdupras/guava-probably/blob/master/src/main/java/com/duprasville/guava/probably/CuckooFilter.java https://github.com/seiflotfy/cuckoofilter/blob/master/cuckoofilter.go)
 
 
 `*` = Unfinished/WIP
