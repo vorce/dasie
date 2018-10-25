@@ -562,8 +562,7 @@ defmodule Dasie.RedBlackTreeTest do
   end
 
   def every_red_node_has_black_children?(%RedBlackTree{color: :black} = node) do
-    every_red_node_has_black_children?(node.left) &&
-      every_red_node_has_black_children?(node.right)
+    every_red_node_has_black_children?(node.left) && every_red_node_has_black_children?(node.right)
   end
 
   def every_red_node_has_black_children?(_) do
@@ -582,8 +581,7 @@ defmodule Dasie.RedBlackTreeTest do
       do:
         IO.inspect(
           tree,
-          label:
-            "Tree violates invariant: Every path from the root to a leaf contains the same number of black nodes"
+          label: "Tree violates invariant: Every path from the root to a leaf contains the same number of black nodes"
         )
 
     all_equal?
