@@ -53,9 +53,10 @@ defmodule Dasie.LinkedList do
     |> new()
   end
 
-  defp values(%__MODULE__{next: nil, data: data}), do: [data]
+  @doc "Returns the items in the list"
+  def values(%__MODULE__{next: nil, data: data}), do: [data]
 
-  defp values(%__MODULE__{next: next, data: data}) do
+  def values(%__MODULE__{next: next, data: data}) do
     [data] ++ values(next)
   end
 

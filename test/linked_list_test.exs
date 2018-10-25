@@ -1,5 +1,6 @@
 defmodule Dasie.LinkedListTest do
   use ExUnit.Case
+  use ExUnitProperties
 
   alias Dasie.LinkedList
 
@@ -60,9 +61,11 @@ defmodule Dasie.LinkedListTest do
         next: %LinkedList{data: "first", next: nil}}}}
     end
 
-    test "twice returns the original list" do
-      list = LinkedList.new(["first", "second", "third", "fourth"])
-      assert list |> LinkedList.reverse() |> LinkedList.reverse() == list
+    property "reverse twice is the same as the original" do
+      check all items <- StreamData.list_of(StreamData.binary()) do
+        list = LinkedList.new(items)
+        assert list |> LinkedList.reverse() |> LinkedList.reverse() == list
+      end
     end
   end
 
@@ -70,6 +73,18 @@ defmodule Dasie.LinkedListTest do
     test "removes an element" do
       list = LinkedList.new(["first", "second", "third"])
       assert LinkedList.delete(list, "second") == %LinkedList{data: "first", next: %LinkedList{data: "third", next: nil}}
+    end
+
+    property "a deleted element is no longer present" do
+      check all items <- StreamData.nonempty(StreamData.uniq_list_of(StreamData.integer())) do
+        delete_element = Enum.random(items)
+
+        list = items
+        |> LinkedList.new()
+        |> LinkedList.delete(delete_element)
+
+        refute list |> LinkedList.values() |> Enum.member?(delete_element)
+      end
     end
   end
 end
