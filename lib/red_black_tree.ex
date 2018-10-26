@@ -180,6 +180,11 @@ defmodule Dasie.RedBlackTree do
       ) do
     fused = fuse(left.right, right.left)
 
+    if(fused == nil) do
+      IO.inspect(left, label: "left")
+      IO.inspect(right, label: "right")
+    end
+
     case fused do
       %__MODULE__{color: :red} = red ->
         %__MODULE__{
@@ -199,6 +204,8 @@ defmodule Dasie.RedBlackTree do
         %__MODULE__{color: :black, right: nil} = left,
         %__MODULE__{color: :black, left: nil} = right
       ) do
+    IO.puts("Fusing two black trees with nil parts")
+    # %__MODULE__{left | right: right}
     balance_right(%__MODULE__{right | left: left})
   end
 

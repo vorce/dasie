@@ -1,5 +1,6 @@
 defmodule Dasie.RedBlackTreeTest do
   use ExUnit.Case
+  use ExUnitProperties
 
   alias Dasie.RedBlackTree
 
@@ -178,6 +179,18 @@ defmodule Dasie.RedBlackTreeTest do
              }
 
       assert every_red_node_has_black_children?(result)
+    end
+
+    property "every red node has black children" do
+      check all tree <- red_black_tree_generator() do
+        assert every_red_node_has_black_children?(tree)
+      end
+    end
+
+    property "all paths have the same number of black nodes" do
+      check all tree <- red_black_tree_generator() do
+        assert all_paths_have_same_black_nodes?(tree)
+      end
     end
   end
 
@@ -504,6 +517,18 @@ defmodule Dasie.RedBlackTreeTest do
 
       assert RedBlackTree.delete(rbt, 6) == root
     end
+
+    property "every red node has black children" do
+      check all tree <- red_black_tree_w_deletes_generator() do
+        assert every_red_node_has_black_children?(tree)
+      end
+    end
+
+    property "all paths have the same number of black nodes" do
+      check all tree <- red_black_tree_w_deletes_generator() do
+        assert all_paths_have_same_black_nodes?(tree)
+      end
+    end
   end
 
   test "bigger example" do
@@ -539,7 +564,27 @@ defmodule Dasie.RedBlackTreeTest do
     assert all_paths_have_same_black_nodes?(rbt3)
   end
 
-  # TODO Write some property based tests!
+  test "failing" do
+    tree = %Dasie.RedBlackTree{
+  color: :black,
+  data: -6614,
+  left: %Dasie.RedBlackTree{
+    color: :black,
+    data: -8134,
+    left: nil,
+    right: %Dasie.RedBlackTree{color: :red, data: -7587, left: nil, right: nil}
+  },
+  right: %Dasie.RedBlackTree{
+    color: :black,
+    data: 6851,
+    left: %Dasie.RedBlackTree{color: :red, data: -4408, left: nil, right: nil},
+    right: nil
+  }
+}
+  delete_item = -6614
+
+  assert RedBlackTree.delete(tree, delete_item) == ""
+  end
 
   defp balanced_rbt() do
     bx = %RedBlackTree{RedBlackTree.new(7) | color: :black}
@@ -605,5 +650,39 @@ defmodule Dasie.RedBlackTreeTest do
 
   def count_black_nodes_to_leaf(nil, acc) do
     acc
+  end
+
+  def red_black_tree_generator() do
+    gen all values <- StreamData.nonempty(StreamData.list_of(StreamData.integer())) do
+      [first|rest] = values
+      Enum.reduce(rest, RedBlackTree.new(first), fn value, acc ->
+        RedBlackTree.insert(acc, value)
+      end)
+    end
+  end
+
+  def red_black_tree_w_deletes_generator() do
+    gen all values <- StreamData.nonempty(StreamData.uniq_list_of(StreamData.integer(-10_000..10_000), length: 4..10)) do
+      [first|rest] = values
+
+      tree = Enum.reduce(rest, RedBlackTree.new(first), fn value, acc ->
+        RedBlackTree.insert(acc, value)
+      end)
+      |> IO.inspect(label: "tree")
+
+      delete1 = Enum.at(values, :rand.uniform(length(values) - 2))
+      delete2 = List.first(values)
+      delete3 = List.last(values)
+
+      IO.inspect([nr_items: length(values), delete1: delete1, delete2: delete2, delete3: delete3], label: "delete items")
+
+      tree
+      |> RedBlackTree.delete(delete1)
+      |> IO.inspect(label: "after delete1")
+      |> RedBlackTree.delete(delete2)
+      |> IO.inspect(label: "after delete2")
+      |> RedBlackTree.delete(delete3)
+      |> IO.inspect(label: "after delete3")
+    end
   end
 end
