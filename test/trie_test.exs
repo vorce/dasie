@@ -1,11 +1,12 @@
 defmodule TrieTest do
   use ExUnit.Case
+  use ExUnitProperties
 
   alias Dasie.Trie
 
   describe "new" do
     test "empty trie" do
-      Trie.new() == %Trie{}
+      assert Trie.new() == %Trie{}
     end
   end
 
@@ -104,6 +105,29 @@ defmodule TrieTest do
                ]
              }
     end
+
+    # http://www.mathcs.emory.edu/~cheung/Courses/323/Syllabus/Text/trie01.html
+    property "number of leaf nodes == number of words" do
+      check all words <- word_list_generator([list: [min_length: 10], string: [min_length: 3]]) do
+        trie = Enum.reduce(words, Trie.new(), fn word, acc ->
+          Trie.insert(acc, word)
+        end)
+
+        assert total_leaf_nodes(trie) == length(words)
+      end
+    end
+
+    property "height of the trie == length of the longest string" do
+      check all words <- word_list_generator([list: [min_length: 10], string: [min_length: 3]]) do
+        trie = Enum.reduce(words, Trie.new(), fn word, acc ->
+          Trie.insert(acc, word)
+        end)
+
+        longest_string = Enum.max_by(words, fn word -> String.length(word) end)
+
+        assert height(trie) == String.length(longest_string)
+      end
+    end
   end
 
   describe "valid_words/2" do
@@ -186,5 +210,38 @@ defmodule TrieTest do
 
       assert child == nil
     end
+  end
+
+  def word_list_generator(opts \\ []) do
+    string_options = Keyword.get(opts, :string, [])
+    list_options = Keyword.get(opts, :list, [])
+
+    :alphanumeric
+    |> StreamData.string(string_options)
+    |> StreamData.uniq_list_of(list_options)
+    |> StreamData.nonempty()
+  end
+
+  def total_leaf_nodes(trie, acc \\ 0)
+  def total_leaf_nodes(nil, acc), do: acc
+  def total_leaf_nodes(%Trie{terminates?: true, children: []}, acc), do: acc + 1
+  def total_leaf_nodes(%Trie{terminates?: true, children: children}, acc) do
+    children
+    |> Enum.map(&total_leaf_nodes(&1, acc + 1))
+    |> Enum.sum()
+  end
+  def total_leaf_nodes(%Trie{terminates?: false, children: children}, acc) do
+    children
+    |> Enum.map(&total_leaf_nodes(&1, acc))
+    |> Enum.sum()
+  end
+
+  def height(trie, acc \\ 0)
+  def height(nil, acc), do: acc
+  def height(%Trie{children: []}, acc), do: acc
+  def height(%Trie{children: children}, acc) do
+    children
+    |> Enum.map(&height(&1, acc + 1))
+    |> Enum.max()
   end
 end

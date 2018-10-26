@@ -14,7 +14,8 @@ Implementations of some basic data structures for fun and learning. I don't reco
 - [Red-black Tree](lib/red_black_tree.ex)
 - [Sorted set](lib/sorted_set.ex)
 
-Example usage is in the [tests](test/).
+Example usage is in the [tests](test/). Testing has been a focus since the start of this project.
+There should be plenty of example based tests, and some property based ones for each implementation.
 
 ### Next up
 
