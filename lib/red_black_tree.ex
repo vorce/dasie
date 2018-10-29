@@ -236,8 +236,6 @@ defmodule Dasie.RedBlackTree do
     }
   end
 
-  def balance_left(node), do: node
-
   def balance_right(%__MODULE__{right: %__MODULE__{color: :red} = x} = y) do
     %__MODULE__{y | color: :red, right: %__MODULE__{x | color: :black}}
   end
@@ -260,6 +258,4 @@ defmodule Dasie.RedBlackTree do
         right: %__MODULE__{y | color: :black, left: u.right}
     }
   end
-
-  def balance_right(node), do: node
 end
