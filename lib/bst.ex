@@ -25,6 +25,10 @@ defmodule Dasie.BST do
     %__MODULE__{data: data}
   end
 
+  def insert(%__MODULE__{data: data} = tree, new_data) when new_data == data do
+    tree
+  end
+
   def insert(%__MODULE__{data: data, left: nil} = tree, new_data) when new_data < data do
     %__MODULE__{tree | left: new(new_data)}
   end
