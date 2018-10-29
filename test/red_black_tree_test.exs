@@ -96,9 +96,7 @@ defmodule Dasie.RedBlackTreeTest do
                root
                | left: %RedBlackTree{
                    color: :red,
-                   data: 2,
-                   left: nil,
-                   right: nil
+                   data: 2
                  }
              }
 
@@ -116,9 +114,7 @@ defmodule Dasie.RedBlackTreeTest do
                root
                | right: %RedBlackTree{
                    color: :red,
-                   data: 6,
-                   left: nil,
-                   right: nil
+                   data: 6
                  }
              }
 
@@ -318,9 +314,9 @@ defmodule Dasie.RedBlackTreeTest do
 
       assert RedBlackTree.delete_left(2, rbt, &RedBlackTree.default_compare_function/2) ==
                %RedBlackTree{
-                 color: :red,
+                 color: :black,
                  data: 4,
-                 right: %RedBlackTree{color: :black, data: 6}
+                 right: %RedBlackTree{color: :red, data: 6}
                }
     end
 
@@ -331,7 +327,7 @@ defmodule Dasie.RedBlackTreeTest do
 
       assert RedBlackTree.delete_left(2, rbt, &RedBlackTree.default_compare_function/2) ==
                %RedBlackTree{
-                 color: :black,
+                 color: :red,
                  data: 4,
                  right: %RedBlackTree{
                    color: :red,
@@ -349,9 +345,9 @@ defmodule Dasie.RedBlackTreeTest do
 
       assert RedBlackTree.delete_right(6, rbt, &RedBlackTree.default_compare_function/2) ==
                %RedBlackTree{
-                 color: :red,
+                 color: :black,
                  data: 4,
-                 left: %RedBlackTree{color: :black, data: 2}
+                 left: %RedBlackTree{color: :red, data: 2}
                }
     end
 
@@ -362,7 +358,7 @@ defmodule Dasie.RedBlackTreeTest do
 
       assert RedBlackTree.delete_right(6, rbt, &RedBlackTree.default_compare_function/2) ==
                %RedBlackTree{
-                 color: :black,
+                 color: :red,
                  data: 4,
                  left: %RedBlackTree{
                    color: :red,
@@ -502,6 +498,42 @@ defmodule Dasie.RedBlackTreeTest do
                }
              }
     end
+
+    test "funky case" do
+      tree = %RedBlackTree{
+        color: :black,
+        data: 124,
+        left: %RedBlackTree{
+          color: :black,
+          data: 0,
+          right: %RedBlackTree{color: :red, data: 123}
+        },
+        right: %RedBlackTree{
+          color: :black,
+          data: 8505,
+          left: %RedBlackTree{color: :red, data: 7593}
+        }
+      }
+
+      delete1 = 124
+
+      assert RedBlackTree.delete(tree, delete1) == %RedBlackTree{
+               color: :black,
+               data: 123,
+               left: %RedBlackTree{
+                 color: :black,
+                 data: 0
+               },
+               right: %RedBlackTree{
+                 color: :black,
+                 data: 8505,
+                 left: %RedBlackTree{
+                   color: :red,
+                   data: 7593
+                 }
+               }
+             }
+    end
   end
 
   describe "delete/2" do
@@ -516,6 +548,39 @@ defmodule Dasie.RedBlackTreeTest do
       rbt = RedBlackTree.insert(root, 6)
 
       assert RedBlackTree.delete(rbt, 6) == root
+    end
+
+    test "failing after deletions" do
+      tree = %RedBlackTree{
+        color: :black,
+        data: 2,
+        left: %RedBlackTree{
+          color: :black,
+          data: 1,
+          left: %RedBlackTree{color: :red, data: 0}
+        },
+        right: %RedBlackTree{color: :black, data: 4169}
+      }
+
+      delete1 = 2
+      delete2 = 1
+      delete3 = 4169
+
+      tree1 = RedBlackTree.delete(tree, delete1)
+
+      assert tree1 == %RedBlackTree{
+               color: :black,
+               data: 1,
+               left: %RedBlackTree{color: :black, data: 0},
+               right: %RedBlackTree{color: :black, data: 4169}
+             }
+
+      tree2 = RedBlackTree.delete(tree1, delete2)
+
+      assert tree2 == %RedBlackTree{color: :black, data: 0, right: %RedBlackTree{color: :red, data: 4169}}
+
+      tree3 = RedBlackTree.delete(tree2, delete3)
+      assert tree3 == %RedBlackTree{color: :black, data: 0}
     end
 
     property "every red node has black children" do
@@ -562,28 +627,6 @@ defmodule Dasie.RedBlackTreeTest do
 
     assert every_red_node_has_black_children?(rbt3)
     assert all_paths_have_same_black_nodes?(rbt3)
-  end
-
-  test "failing" do
-    tree = %Dasie.RedBlackTree{
-  color: :black,
-  data: -6614,
-  left: %Dasie.RedBlackTree{
-    color: :black,
-    data: -8134,
-    left: nil,
-    right: %Dasie.RedBlackTree{color: :red, data: -7587, left: nil, right: nil}
-  },
-  right: %Dasie.RedBlackTree{
-    color: :black,
-    data: 6851,
-    left: %Dasie.RedBlackTree{color: :red, data: -4408, left: nil, right: nil},
-    right: nil
-  }
-}
-  delete_item = -6614
-
-  assert RedBlackTree.delete(tree, delete_item) == ""
   end
 
   defp balanced_rbt() do
@@ -654,35 +697,133 @@ defmodule Dasie.RedBlackTreeTest do
 
   def red_black_tree_generator() do
     gen all values <- StreamData.nonempty(StreamData.list_of(StreamData.integer())) do
-      [first|rest] = values
+      [first | rest] = values
+
       Enum.reduce(rest, RedBlackTree.new(first), fn value, acc ->
         RedBlackTree.insert(acc, value)
       end)
     end
   end
 
-  def red_black_tree_w_deletes_generator() do
-    gen all values <- StreamData.nonempty(StreamData.uniq_list_of(StreamData.integer(-10_000..10_000), length: 4..10)) do
-      [first|rest] = values
+  test "delete leaf case" do
+    tree = %RedBlackTree{
+      color: :black,
+      data: 4621,
+      left: %RedBlackTree{
+        color: :red,
+        data: 1608,
+        left: %RedBlackTree{color: :black, data: 1141},
+        right: %RedBlackTree{color: :black, data: 1707}
+      },
+      right: %RedBlackTree{
+        color: :black,
+        data: 9983,
+        left: %RedBlackTree{color: :red, data: 7429}
+      }
+    }
 
-      tree = Enum.reduce(rest, RedBlackTree.new(first), fn value, acc ->
-        RedBlackTree.insert(acc, value)
-      end)
-      |> IO.inspect(label: "tree")
+    delete1 = 1707
+    new_tree = RedBlackTree.delete(tree, delete1)
+
+    assert all_paths_have_same_black_nodes?(new_tree)
+    assert every_red_node_has_black_children?(new_tree)
+
+    assert new_tree == %RedBlackTree{
+             color: :black,
+             data: 4621,
+             left: %RedBlackTree{
+               color: :black,
+               data: 1608,
+               left: %RedBlackTree{color: :red, data: 1141}
+             },
+             right: %RedBlackTree{
+               color: :black,
+               data: 9983,
+               left: %RedBlackTree{color: :red, data: 7429}
+             }
+           }
+  end
+
+  test "delete leaf case 2" do
+    # values: [6503, 1690, 4067, 9009, 4004]
+    tree = %RedBlackTree{
+      color: :black,
+      data: 4067,
+      left: %RedBlackTree{
+        color: :black,
+        data: 1690,
+        right: %RedBlackTree{color: :red, data: 4004}
+      },
+      right: %RedBlackTree{
+        color: :black,
+        data: 6503,
+        right: %RedBlackTree{color: :red, data: 9009}
+      }
+    }
+
+    # delete items: [nr_items: 5, delete1: 9009, delete2: 6503, delete3: 4004]
+    new_tree = RedBlackTree.delete(tree, 9009)
+    assert all_paths_have_same_black_nodes?(new_tree)
+
+    assert new_tree == %RedBlackTree{
+             color: :black,
+             data: 4067,
+             left: %RedBlackTree{
+               color: :black,
+               data: 1690,
+               right: %RedBlackTree{
+                 color: :red,
+                 data: 4004
+               }
+             },
+             right: %RedBlackTree{
+               color: :black,
+               data: 6503
+             }
+           }
+  end
+
+  def red_black_tree_w_deletes_generator() do
+    gen all values <- StreamData.nonempty(StreamData.uniq_list_of(StreamData.integer(-10_000..10_000), length: 4..100)) do
+      [first | rest] = values
+      # |> IO.inspect(label: "values")
+
+      tree =
+        Enum.reduce(rest, RedBlackTree.new(first), fn value, acc ->
+          RedBlackTree.insert(acc, value)
+        end)
+
+      # |> IO.inspect(label: "tree")
+
+      all_paths_have_same_black_nodes?(tree)
 
       delete1 = Enum.at(values, :rand.uniform(length(values) - 2))
       delete2 = List.first(values)
       delete3 = List.last(values)
 
-      IO.inspect([nr_items: length(values), delete1: delete1, delete2: delete2, delete3: delete3], label: "delete items")
+      # IO.inspect([nr_items: length(values), delete1: delete1, delete2: delete2, delete3: delete3], label: "delete items")
+
+      # tree1 = RedBlackTree.delete(tree, delete1)
+      # |> IO.inspect(label: "after delete1")
+
+      # all_paths_have_same_black_nodes?(tree1)
+
+      # tree2 = RedBlackTree.delete(tree1, delete2)
+      # |> IO.inspect(label: "after delete2")
+
+      # all_paths_have_same_black_nodes?(tree2)
+
+      # tree3 = RedBlackTree.delete(tree2, delete3)
+      # |> IO.inspect(label: "after delete3")
+
+      # all_paths_have_same_black_nodes?(tree3)
+
+      # tree3
 
       tree
       |> RedBlackTree.delete(delete1)
-      |> IO.inspect(label: "after delete1")
       |> RedBlackTree.delete(delete2)
-      |> IO.inspect(label: "after delete2")
       |> RedBlackTree.delete(delete3)
-      |> IO.inspect(label: "after delete3")
     end
   end
 end

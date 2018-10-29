@@ -8,6 +8,7 @@ defmodule Dasie.RedBlackTree do
 
   - http://www.cs.ox.ac.uk/ralf.hinze/WG2.8/32/slides/red-black-pearl.pdf
   - https://functional.works-hub.com/learn/Persistent-Red-Black-Trees-in-Haskell
+  - http://inst.eecs.berkeley.edu/~cs61b/fa17/materials/demos/ll-red-black-demo.html
   """
 
   defstruct data: nil,
@@ -142,20 +143,20 @@ defmodule Dasie.RedBlackTree do
     end
   end
 
-  def delete_left(element, %__MODULE__{color: :red} = node, compare_fn) do
-    %__MODULE__{node | left: do_delete(element, node.left, compare_fn)}
-  end
-
-  def delete_left(element, %__MODULE__{color: :black} = node, compare_fn) do
+  def delete_left(element, %__MODULE__{left: %__MODULE__{color: :black}} = node, compare_fn) do
     balance_left(%__MODULE__{node | left: do_delete(element, node.left, compare_fn)})
   end
 
-  def delete_right(element, %__MODULE__{color: :red} = node, compare_fn) do
-    %__MODULE__{node | right: do_delete(element, node.right, compare_fn)}
+  def delete_left(element, %__MODULE__{} = node, compare_fn) do
+    %__MODULE__{node | color: :red, left: do_delete(element, node.left, compare_fn)}
   end
 
-  def delete_right(element, %__MODULE__{color: :black} = node, compare_fn) do
+  def delete_right(element, %__MODULE__{right: %__MODULE__{color: :black}} = node, compare_fn) do
     balance_right(%__MODULE__{node | right: do_delete(element, node.right, compare_fn)})
+  end
+
+  def delete_right(element, %__MODULE__{} = node, compare_fn) do
+    %__MODULE__{node | color: :red, right: do_delete(element, node.right, compare_fn)}
   end
 
   def fuse(nil, right) do
@@ -180,11 +181,6 @@ defmodule Dasie.RedBlackTree do
       ) do
     fused = fuse(left.right, right.left)
 
-    if(fused == nil) do
-      IO.inspect(left, label: "left")
-      IO.inspect(right, label: "right")
-    end
-
     case fused do
       %__MODULE__{color: :red} = red ->
         %__MODULE__{
@@ -193,20 +189,9 @@ defmodule Dasie.RedBlackTree do
             right: %__MODULE__{right | left: red.right}
         }
 
-      %__MODULE__{color: :black} = black ->
-        %__MODULE__{left | right: %__MODULE__{right | left: black}}
+      other ->
+        %__MODULE__{left | right: %__MODULE__{right | left: other}}
     end
-  end
-
-  # This is probably the case i'm the least confident is doing the right thing
-  # at all times... maybe we can even get rid of it?
-  def fuse(
-        %__MODULE__{color: :black, right: nil} = left,
-        %__MODULE__{color: :black, left: nil} = right
-      ) do
-    IO.puts("Fusing two black trees with nil parts")
-    # %__MODULE__{left | right: right}
-    balance_right(%__MODULE__{right | left: left})
   end
 
   def fuse(
@@ -223,35 +208,20 @@ defmodule Dasie.RedBlackTree do
             right: %__MODULE__{right | left: red.right}
         }
 
-      %__MODULE__{color: :black} = black ->
-        balance_left(%__MODULE__{left | right: %__MODULE__{right | left: black}})
+      other ->
+        balance_left(%__MODULE__{left | right: %__MODULE__{right | left: other}})
     end
   end
 
-  def balance_left(%__MODULE__{color: :black, left: %__MODULE__{color: :red} = x} = y) do
+  def balance_left(%__MODULE__{left: %__MODULE__{color: :red} = x} = y) do
     %__MODULE__{y | color: :red, left: %__MODULE__{x | color: :black}}
   end
 
-  def balance_left(
-        %__MODULE__{
-          color: :black,
-          right: %__MODULE__{color: :black} = z
-        } = y
-      ) do
-    balance(%__MODULE__{y | right: %__MODULE__{z | color: :red}})
+  def balance_left(%__MODULE__{right: %__MODULE__{color: :black} = z} = y) do
+    balance(%__MODULE__{y | color: :black, right: %__MODULE__{z | color: :red}})
   end
 
-  def balance_left(
-        %__MODULE__{
-          color: :black,
-          right:
-            %__MODULE__{
-              color: :red,
-              left: %__MODULE__{color: :black} = u,
-              right: %__MODULE__{color: :black}
-            } = z
-        } = y
-      ) do
+  def balance_left(%__MODULE__{right: %__MODULE__{color: :red, left: %__MODULE__{color: :black} = u} = z} = y) do
     %__MODULE__{
       u
       | color: :red,
@@ -268,30 +238,15 @@ defmodule Dasie.RedBlackTree do
 
   def balance_left(node), do: node
 
-  def balance_right(%__MODULE__{color: :black, right: %__MODULE__{color: :red} = x} = y) do
+  def balance_right(%__MODULE__{right: %__MODULE__{color: :red} = x} = y) do
     %__MODULE__{y | color: :red, right: %__MODULE__{x | color: :black}}
   end
 
-  def balance_right(
-        %__MODULE__{
-          color: :black,
-          left: %__MODULE__{color: :black} = z
-        } = y
-      ) do
-    balance(%__MODULE__{y | left: %__MODULE__{z | color: :red}})
+  def balance_right(%__MODULE__{left: %__MODULE__{color: :black} = z} = y) do
+    balance(%__MODULE__{y | color: :black, left: %__MODULE__{z | color: :red}})
   end
 
-  def balance_right(
-        %__MODULE__{
-          color: :black,
-          left:
-            %__MODULE__{
-              color: :red,
-              left: %__MODULE__{color: :black},
-              right: %__MODULE__{color: :black} = u
-            } = z
-        } = y
-      ) do
+  def balance_right(%__MODULE__{left: %__MODULE__{color: :red, right: %__MODULE__{color: :black} = u} = z} = y) do
     %__MODULE__{
       u
       | color: :red,
@@ -302,7 +257,7 @@ defmodule Dasie.RedBlackTree do
               left: %__MODULE__{z.left | color: :red},
               right: u.left
           }),
-        right: %__MODULE__{y | left: u.right}
+        right: %__MODULE__{y | color: :black, left: u.right}
     }
   end
 
