@@ -66,6 +66,13 @@ defmodule Dasie.BSTTest do
              }
     end
 
+    test "insert same value as root" do
+      root_value = -21466
+      original_tree = BST.new(root_value)
+
+      assert BST.insert(original_tree, root_value) == original_tree
+    end
+
     property "every node in the right subtree is larger than the current node and every node on the left subtree is smaller than the current node" do
       check all tree <- bst_generator() do
         assert valid_bst?(tree)
