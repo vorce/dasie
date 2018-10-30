@@ -17,11 +17,4 @@ Implementations of some basic data structures for fun and learning. I don't reco
 Example usage is in the [tests](test/). Testing has been a focus since the start of this project.
 There should be plenty of example based tests, and some property based ones (still WIP) for each implementation.
 
-### Next up
-
-- [ ] Treap (https://www.cs.cornell.edu/courses/cs312/2003sp/lectures/lec26.html)
-- [ ] Implement some protocols?
-- [ ] Cuckoo filter (https://www.cs.cmu.edu/%7Edga/papers/cuckoo-conext2014.pdf https://github.com/bdupras/guava-probably/blob/master/src/main/java/com/duprasville/guava/probably/CuckooFilter.java https://github.com/seiflotfy/cuckoofilter/blob/master/cuckoofilter.go)
-
-
 `*` = Unfinished/WIP
