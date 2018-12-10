@@ -23,6 +23,8 @@ defmodule Dasie.CuckooFilterTest do
       bucket = result.buckets |> Map.values() |> List.first()
       assert MapSet.size(bucket.entries) == 1
     end
+
+    # TODO test relocate when a bucket is full.
   end
 
   describe "member?/2" do
