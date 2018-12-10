@@ -4,7 +4,7 @@
 
 DAta Structures In Elixir.
 
-Implementations of some basic data structures for fun and learning. I don't recommend using these for anything important.
+Implementations of some data structures for fun and learning. I don't recommend using these for anything important.
 
 ## Available data structures
 
@@ -13,6 +13,7 @@ Implementations of some basic data structures for fun and learning. I don't reco
 - [Trie / prefix tree](lib/trie.ex)
 - [Red-black Tree](lib/red_black_tree.ex)
 - [Sorted set](lib/sorted_set.ex)
+- [Cuckoo filter](lib/cuckoo_filter.ex)
 
 Example usage is in the [tests](test/). Testing has been a focus since the start of this project.
 There should be plenty of example based tests, and some property based ones (still WIP) for each implementation.
