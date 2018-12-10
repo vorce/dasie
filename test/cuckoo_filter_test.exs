@@ -44,4 +44,32 @@ defmodule Dasie.CuckooFilterTest do
       end
     end
   end
+
+  describe "delete/2" do
+    test "removes item" do
+      item = "first item"
+      keeper = "keeper item"
+
+      cuckoo =
+        CuckooFilter.new()
+        |> CuckooFilter.insert(item)
+        |> CuckooFilter.insert(keeper)
+        |> CuckooFilter.delete(item)
+
+      refute CuckooFilter.member?(cuckoo, item)
+    end
+
+    # property "removes item" do
+    #   check all item <- StreamData.tuple() StreamData.binary(),
+    #             keeper <- StreamData.binary() do
+    #     cuckoo =
+    #       CuckooFilter.new()
+    #       |> CuckooFilter.insert(item)
+    #       |> CuckooFilter.insert(keeper)
+    #       |> CuckooFilter.delete(item)
+    #
+    #     refute CuckooFilter.member?(cuckoo, item)
+    #   end
+    # end
+  end
 end

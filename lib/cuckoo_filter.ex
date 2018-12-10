@@ -78,8 +78,18 @@ defmodule Dasie.CuckooFilter do
     |> Enum.any?(&(&1 == true))
   end
 
-  # def delete() do
-  # end
+  def delete(%__MODULE__{} = cuckoo, item) do
+    fingerprint = fingerprint(item, cuckoo.fingerprint_size)
+    bucket_1 = item |> hash() |> rem(cuckoo.bucket_count)
+    bucket_2 = bucket_1 |> bxor(hash(fingerprint)) |> rem(cuckoo.bucket_count)
+
+    modified =
+      cuckoo.buckets
+      |> Map.take([bucket_1, bucket_2])
+      |> Enum.into(%{}, fn {k, bucket} -> {k, %Bucket{bucket | entries: MapSet.delete(bucket.entries, fingerprint)}} end)
+
+    %__MODULE__{cuckoo | buckets: Map.merge(cuckoo.buckets, modified)}
+  end
 
   defp hash(item) do
     :erlang.phash2(item)
