@@ -24,7 +24,32 @@ defmodule Dasie.CuckooFilterTest do
       assert MapSet.size(bucket.entries) == 1
     end
 
-    # TODO test relocate when a bucket is full.
+    test "returns error tuple when filter is full" do
+      cuckoo = CuckooFilter.new(max_keys: 1, bucket_size: 1)
+
+      result =
+        cuckoo
+        |> CuckooFilter.insert(1)
+
+      assert %CuckooFilter{} = result
+
+      result = CuckooFilter.insert(result, 2)
+
+      assert result == {:error, :full}
+    end
+
+    test "will relocate to make space" do
+      cuckoo = CuckooFilter.new(max_keys: 4, bucket_size: 1)
+
+      result =
+        cuckoo
+        |> CuckooFilter.insert(1)
+        |> CuckooFilter.insert(2)
+        |> CuckooFilter.insert(3)
+        |> CuckooFilter.insert(4)
+
+      assert result == :ok
+    end
   end
 
   describe "member?/2" do

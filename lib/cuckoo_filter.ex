@@ -23,6 +23,7 @@ defmodule Dasie.CuckooFilter do
   @max_displacements 500
 
   # A basic cuckoo hash table consists of an array of buckets
+  # TODO what are sensible defaults?!
   defstruct buckets: %{},
             load: 0,
             fingerprint_size: @default_fingerprint_length,
@@ -32,8 +33,9 @@ defmodule Dasie.CuckooFilter do
 
   def new(opts \\ []) do
     max_keys = opts[:max_keys] || 100_000
+    bucket_size = opts[:bucket_size] || 4
 
-    cuckoo = %__MODULE__{max_keys: max_keys}
+    cuckoo = %__MODULE__{max_keys: max_keys, bucket_size: bucket_size}
     keys_per_bucket_size = cuckoo.max_keys / cuckoo.bucket_size
     log2 = :math.log(keys_per_bucket_size) / :math.log(2)
     bucket_count = :math.pow(2, Float.ceil(log2)) |> trunc()
