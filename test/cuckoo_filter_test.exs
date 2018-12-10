@@ -1,5 +1,6 @@
 defmodule Dasie.CuckooFilterTest do
   use ExUnit.Case
+  use ExUnitProperties
 
   alias Dasie.CuckooFilter
 
@@ -21,6 +22,26 @@ defmodule Dasie.CuckooFilterTest do
 
       bucket = result.buckets |> Map.values() |> List.first()
       assert MapSet.size(bucket.entries) == 1
+    end
+  end
+
+  describe "member?/2" do
+    property "returns true if the item was inserted" do
+      check all item <- StreamData.binary() do
+        cuckoo =
+          CuckooFilter.new()
+          |> CuckooFilter.insert(item)
+
+        assert CuckooFilter.member?(cuckoo, item)
+      end
+    end
+
+    test "returns false if the item was not inserted" do
+      check all item <- StreamData.binary() do
+        refute CuckooFilter.new()
+               |> CuckooFilter.insert(item)
+               |> CuckooFilter.member?("something highly improbable to be generated here :)")
+      end
     end
   end
 end
