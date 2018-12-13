@@ -62,6 +62,9 @@ defmodule Dasie.CuckooFilter do
 
       true ->
         IO.puts("No space in either bucket #{inspect([bucket_1, bucket_2])}, relocating...")
+        # [bucket_1, bucket_2]
+        # |> Enum.random()
+        # |> relocate2(cuckoo, fingerprint)
 
         cuckoo
         |> relocate(bucket_1, bucket_2)
@@ -110,6 +113,17 @@ defmodule Dasie.CuckooFilter do
 
   defp relocate(%__MODULE__{} = cuckoo, bucket_1, bucket_2) do
     cuckoo
+  end
+
+  defp relocate2(bucket_id, cuckoo, fingerprint, relocation_round \\ 0)
+  defp relocate2(_bucket_id, %__MODULE__{} = _cuckoo, _fingerprint, @max_displacements) do
+    {:error, :full}
+  end
+  defp relocate2(bucket_id, %__MODULE__{} = cuckoo, fingerprint, relocation_round) do
+    bucket = Map.get(cuckoo.buckets, bucket_id)
+    random_entry = bucket.entries |> MapSet.to_list() |> Enum.random()
+
+    bucket = %Bucket{bucket | entries: bucket.entries |> MapSet.delete(random_entry) |> MapSet.put(fingerprint)}
   end
 
   @doc """
