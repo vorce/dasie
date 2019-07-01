@@ -10,7 +10,11 @@ defmodule Dasie.Mixfile do
       deps: deps(),
       test_coverage: [tool: ExCoveralls],
       preferred_cli_env: [coveralls: :test],
-      elixirc_options: [warnings_as_errors: true]
+      elixirc_options: [warnings_as_errors: true],
+      dialyzer: [
+        plt_file: {:no_warn, "priv/plts/dialyzer.plt"},
+        plt_add_apps: [:dasie]
+      ]
     ]
   end
 
@@ -25,7 +29,8 @@ defmodule Dasie.Mixfile do
   defp deps do
     [
       {:excoveralls, "~> 0.8", only: :test},
-      {:stream_data, "~> 0.4", only: :test}
+      {:stream_data, "~> 0.4", only: :test},
+      {:dialyxir, "~> 0.5", only: [:dev], runtime: false}
     ]
   end
 end
