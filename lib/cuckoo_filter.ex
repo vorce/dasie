@@ -37,7 +37,7 @@ defmodule Dasie.CuckooFilter do
             max_keys: 100_000
 
   @type t :: %__MODULE__{
-          buckets: Map.t(),
+          buckets: map,
           load: integer,
           fingerprint_size: integer,
           bucket_size: integer,
