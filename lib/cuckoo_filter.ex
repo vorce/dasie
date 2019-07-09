@@ -29,11 +29,21 @@ defmodule Dasie.CuckooFilter do
   # A basic cuckoo hash table consists of an array of buckets
   # TODO what are sensible defaults?!
   defstruct buckets: %{},
+            # number of entries in the filter
             load: 0,
             fingerprint_size: @default_fingerprint_length,
             bucket_size: 4,
             bucket_count: 10,
             max_keys: 100_000
+
+  @type t :: %__MODULE__{
+          buckets: Map.t(),
+          load: integer,
+          fingerprint_size: integer,
+          bucket_size: integer,
+          bucket_count: integer,
+          max_keys: integer
+        }
 
   @spec new(opts :: Keyword.t()) :: CuckooFilter.t()
   def new(opts \\ []) do
