@@ -2,6 +2,9 @@ defmodule Dasie.CuckooFilter do
   @moduledoc """
   A cuckoo filter is like a bloom filter but better ;)
 
+  TODO: This one I am still a bit unsure of, as in how correct and usable
+  the current implementation is.
+
   References:
   - https://brilliant.org/wiki/cuckoo-filter/
   - https://bdupras.github.io/filter-tutorial/
@@ -19,7 +22,7 @@ defmodule Dasie.CuckooFilter do
   end
 
   @default_fingerprint_length 16
-  # number of relocations allowed before giving up on an item. If we reach this this hash table is considered too full.
+  # number of relocations allowed before giving up on an item. If we reach this the hash table is considered too full.
   @max_displacements 500
 
   # A basic cuckoo hash table consists of an array of buckets
@@ -42,11 +45,8 @@ defmodule Dasie.CuckooFilter do
     %__MODULE__{cuckoo | bucket_count: bucket_count}
   end
 
-  def insert(%__MODULE__{} = cuckoo, item), do: insert(cuckoo, item, 0)
-
-  defp insert(%__MODULE__{}, _item, relocation_round) when relocation_round >= @max_displacements, do: {:error, :full}
-
-  defp insert(%__MODULE__{} = cuckoo, item, relocation_round) do
+  def insert(%__MODULE__{} = cuckoo, item) do
+    # IO.puts("Trying to insert item #{inspect(item)} in #{inspect(cuckoo)}...")
     # each item x has two candidate buckets determined by hash functions h1(x) and h2(x)
     fingerprint = fingerprint(item, cuckoo.fingerprint_size)
     bucket_1 = item |> hash() |> rem(cuckoo.bucket_count)
@@ -61,14 +61,11 @@ defmodule Dasie.CuckooFilter do
         add_entry(cuckoo, bucket_2, fingerprint)
 
       true ->
-        IO.puts("No space in either bucket #{inspect([bucket_1, bucket_2])}, relocating...")
-        # [bucket_1, bucket_2]
-        # |> Enum.random()
-        # |> relocate2(cuckoo, fingerprint)
+        # IO.puts("No space in either bucket #{inspect([bucket_1, bucket_2])}, relocating...")
 
-        cuckoo
-        |> relocate(bucket_1, bucket_2)
-        |> insert(item, relocation_round + 1)
+        [bucket_1, bucket_2]
+        |> Enum.random()
+        |> relocate(cuckoo, fingerprint)
     end
   end
 
@@ -111,19 +108,27 @@ defmodule Dasie.CuckooFilter do
     %__MODULE__{cuckoo | buckets: Map.put(cuckoo.buckets, bucket_id, new_bucket), load: cuckoo.load + 1}
   end
 
-  defp relocate(%__MODULE__{} = cuckoo, bucket_1, bucket_2) do
-    cuckoo
-  end
+  defp relocate(bucket_id, cuckoo, fingerprint, relocation_round \\ 0)
 
-  defp relocate2(bucket_id, cuckoo, fingerprint, relocation_round \\ 0)
-  defp relocate2(_bucket_id, %__MODULE__{} = _cuckoo, _fingerprint, @max_displacements) do
+  defp relocate(_bucket_id, %__MODULE__{} = _cuckoo, _fingerprint, round) when round >= @max_displacements do
     {:error, :full}
   end
-  defp relocate2(bucket_id, %__MODULE__{} = cuckoo, fingerprint, relocation_round) do
+
+  defp relocate(bucket_id, %__MODULE__{} = cuckoo, fingerprint, relocation_round) do
     bucket = Map.get(cuckoo.buckets, bucket_id)
     random_entry = bucket.entries |> MapSet.to_list() |> Enum.random()
+    entries = bucket.entries |> MapSet.delete(random_entry) |> MapSet.put(fingerprint)
+    bucket = %Bucket{bucket | entries: entries}
+    cuckoo = %__MODULE__{cuckoo | buckets: Map.put(cuckoo.buckets, bucket_id, bucket)}
+    bucket_i = bucket.id |> bxor(hash(random_entry)) |> rem(cuckoo.bucket_count)
 
-    bucket = %Bucket{bucket | entries: bucket.entries |> MapSet.delete(random_entry) |> MapSet.put(fingerprint)}
+    if has_space?(cuckoo, bucket_i) do
+      # IO.inspect(bucket_id, label: "this has space (round #{relocation_round})")
+      add_entry(cuckoo, bucket_i, random_entry)
+    else
+      # IO.puts("No space in #{bucket_i}, relocating again (round #{relocation_round})..")
+      relocate(bucket_i, cuckoo, random_entry, relocation_round + 1)
+    end
   end
 
   @doc """

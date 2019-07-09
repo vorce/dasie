@@ -32,14 +32,11 @@ defmodule Dasie.CuckooFilterTest do
         |> CuckooFilter.insert(1)
 
       assert %CuckooFilter{} = result
-
-      result = CuckooFilter.insert(result, 2)
-
-      assert result == {:error, :full}
+      assert CuckooFilter.insert(result, 2) == {:error, :full}
     end
 
     test "will relocate to make space" do
-      cuckoo = CuckooFilter.new(max_keys: 4, bucket_size: 1)
+      cuckoo = CuckooFilter.new(max_keys: 8, bucket_size: 2)
 
       result =
         cuckoo
@@ -47,8 +44,11 @@ defmodule Dasie.CuckooFilterTest do
         |> CuckooFilter.insert(2)
         |> CuckooFilter.insert(3)
         |> CuckooFilter.insert(4)
+        |> CuckooFilter.insert(5)
+        |> CuckooFilter.insert(6)
+        |> CuckooFilter.insert(7)
 
-      assert result == :ok
+      assert %Dasie.CuckooFilter{load: 7} = result
     end
   end
 
@@ -86,17 +86,22 @@ defmodule Dasie.CuckooFilterTest do
       refute CuckooFilter.member?(cuckoo, item)
     end
 
-    # property "removes item" do
-    #   check all item <- StreamData.tuple() StreamData.binary(),
-    #             keeper <- StreamData.binary() do
-    #     cuckoo =
-    #       CuckooFilter.new()
-    #       |> CuckooFilter.insert(item)
-    #       |> CuckooFilter.insert(keeper)
-    #       |> CuckooFilter.delete(item)
-    #
-    #     refute CuckooFilter.member?(cuckoo, item)
-    #   end
-    # end
+    property "removes item" do
+      check all item <- StreamData.binary(),
+                keeper <- StreamData.binary() do
+        cuckoo =
+          CuckooFilter.new()
+          |> CuckooFilter.insert(item)
+          |> CuckooFilter.insert(keeper)
+          |> CuckooFilter.delete(item)
+
+        refute CuckooFilter.member?(cuckoo, item)
+      end
+    end
+  end
+
+  describe "relocate/4" do
+    # TODO test this...?
+    # It's a very internal function though...
   end
 end
