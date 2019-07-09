@@ -12,6 +12,7 @@ defmodule Dasie.CuckooFilter do
   - https://github.com/bdupras/guava-probably/blob/master/src/main/java/com/duprasville/guava/probably/CuckooFilter.java
   """
   use Bitwise
+  alias Dasie.CuckooFilter
 
   defmodule Bucket do
     @moduledoc """
@@ -34,6 +35,7 @@ defmodule Dasie.CuckooFilter do
             bucket_count: 10,
             max_keys: 100_000
 
+  @spec new(opts :: Keyword.t()) :: CuckooFilter.t()
   def new(opts \\ []) do
     max_keys = opts[:max_keys] || 100_000
     bucket_size = opts[:bucket_size] || 4
@@ -42,10 +44,11 @@ defmodule Dasie.CuckooFilter do
     keys_per_bucket_size = cuckoo.max_keys / cuckoo.bucket_size
     log2 = :math.log(keys_per_bucket_size) / :math.log(2)
     bucket_count = :math.pow(2, Float.ceil(log2)) |> trunc()
-    %__MODULE__{cuckoo | bucket_count: bucket_count}
+    %CuckooFilter{cuckoo | bucket_count: bucket_count}
   end
 
-  def insert(%__MODULE__{} = cuckoo, item) do
+  @spec insert(cuckoo :: CuckooFilter.t(), item :: any) :: CuckooFilter.t() | {:error, :full}
+  def insert(%CuckooFilter{} = cuckoo, item) do
     # IO.puts("Trying to insert item #{inspect(item)} in #{inspect(cuckoo)}...")
     # each item x has two candidate buckets determined by hash functions h1(x) and h2(x)
     fingerprint = fingerprint(item, cuckoo.fingerprint_size)
@@ -69,7 +72,8 @@ defmodule Dasie.CuckooFilter do
     end
   end
 
-  def member?(%__MODULE__{} = cuckoo, item) do
+  @spec member?(cuckoo :: CuckooFilter.t(), item :: any) :: true | false
+  def member?(%CuckooFilter{} = cuckoo, item) do
     fingerprint = fingerprint(item, cuckoo.fingerprint_size)
     bucket_1 = item |> hash() |> rem(cuckoo.bucket_count)
     bucket_2 = bucket_1 |> bxor(hash(fingerprint)) |> rem(cuckoo.bucket_count)
@@ -80,7 +84,8 @@ defmodule Dasie.CuckooFilter do
     |> Enum.any?(&(&1 == true))
   end
 
-  def delete(%__MODULE__{} = cuckoo, item) do
+  @spec delete(cuckoo :: CuckooFilter.t(), item :: any) :: CuckooFilter.t()
+  def delete(%CuckooFilter{} = cuckoo, item) do
     fingerprint = fingerprint(item, cuckoo.fingerprint_size)
     bucket_1 = item |> hash() |> rem(cuckoo.bucket_count)
     bucket_2 = bucket_1 |> bxor(hash(fingerprint)) |> rem(cuckoo.bucket_count)
@@ -90,36 +95,36 @@ defmodule Dasie.CuckooFilter do
       |> Map.take([bucket_1, bucket_2])
       |> Enum.into(%{}, fn {k, bucket} -> {k, %Bucket{bucket | entries: MapSet.delete(bucket.entries, fingerprint)}} end)
 
-    %__MODULE__{cuckoo | buckets: Map.merge(cuckoo.buckets, modified)}
+    %CuckooFilter{cuckoo | buckets: Map.merge(cuckoo.buckets, modified)}
   end
 
   defp hash(item) do
     :erlang.phash2(item)
   end
 
-  defp has_space?(%__MODULE__{} = cuckoo, bucket_id) do
+  defp has_space?(%CuckooFilter{} = cuckoo, bucket_id) do
     bucket = Map.get(cuckoo.buckets, bucket_id, %Bucket{id: bucket_id})
     MapSet.size(bucket.entries) < cuckoo.bucket_size
   end
 
-  defp add_entry(%__MODULE__{} = cuckoo, bucket_id, fingerprint) do
+  defp add_entry(%CuckooFilter{} = cuckoo, bucket_id, fingerprint) do
     bucket = Map.get(cuckoo.buckets, bucket_id, %Bucket{id: bucket_id})
     new_bucket = %Bucket{bucket | entries: MapSet.put(bucket.entries, fingerprint)}
-    %__MODULE__{cuckoo | buckets: Map.put(cuckoo.buckets, bucket_id, new_bucket), load: cuckoo.load + 1}
+    %CuckooFilter{cuckoo | buckets: Map.put(cuckoo.buckets, bucket_id, new_bucket), load: cuckoo.load + 1}
   end
 
   defp relocate(bucket_id, cuckoo, fingerprint, relocation_round \\ 0)
 
-  defp relocate(_bucket_id, %__MODULE__{} = _cuckoo, _fingerprint, round) when round >= @max_displacements do
+  defp relocate(_bucket_id, %CuckooFilter{} = _cuckoo, _fingerprint, round) when round >= @max_displacements do
     {:error, :full}
   end
 
-  defp relocate(bucket_id, %__MODULE__{} = cuckoo, fingerprint, relocation_round) do
+  defp relocate(bucket_id, %CuckooFilter{} = cuckoo, fingerprint, relocation_round) do
     bucket = Map.get(cuckoo.buckets, bucket_id)
     random_entry = bucket.entries |> MapSet.to_list() |> Enum.random()
     entries = bucket.entries |> MapSet.delete(random_entry) |> MapSet.put(fingerprint)
     bucket = %Bucket{bucket | entries: entries}
-    cuckoo = %__MODULE__{cuckoo | buckets: Map.put(cuckoo.buckets, bucket_id, bucket)}
+    cuckoo = %CuckooFilter{cuckoo | buckets: Map.put(cuckoo.buckets, bucket_id, bucket)}
     bucket_i = bucket.id |> bxor(hash(random_entry)) |> rem(cuckoo.bucket_count)
 
     if has_space?(cuckoo, bucket_i) do

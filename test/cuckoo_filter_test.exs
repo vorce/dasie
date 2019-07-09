@@ -11,7 +11,7 @@ defmodule Dasie.CuckooFilterTest do
 
     test "creates a new struct with specified max_keys" do
       max_keys = 100
-      assert %CuckooFilter{max_keys: max_keys} = CuckooFilter.new(max_keys: max_keys)
+      assert %CuckooFilter{max_keys: ^max_keys} = CuckooFilter.new(max_keys: max_keys)
     end
   end
 
