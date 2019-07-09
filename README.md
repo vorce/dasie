@@ -4,7 +4,7 @@
 
 DAta Structures In Elixir.
 
-Implementations of some data structures for fun and learning. I don't recommend using these for anything important.
+Implementations of some (persistent) data structures for fun and learning. I don't recommend using these for anything important.
 
 ## Available data structures
 
