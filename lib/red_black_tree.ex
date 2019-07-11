@@ -18,8 +18,8 @@ defmodule Dasie.RedBlackTree do
 
   @type t :: %__MODULE__{
           data: any,
-          left: t,
-          right: t,
+          left: t | nil,
+          right: t | nil,
           color: atom
         }
 

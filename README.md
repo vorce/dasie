@@ -16,6 +16,7 @@ Implementations of some (persistent) data structures for fun and learning. I don
 - [Cuckoo filter](lib/cuckoo_filter.ex)
 
 Example usage is in the [tests](test/). Testing has been a focus since the start of this project.
-There should be plenty of example based tests, and some property based ones (still WIP) for each implementation.
+There should be plenty of example based tests, and some property based ones for each implementation.
+
 
 `*` = Unfinished/WIP
