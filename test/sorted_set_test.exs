@@ -1,8 +1,63 @@
 defmodule Dasie.SortedSetTest do
   use ExUnit.Case
+  use ExUnitProperties
 
   alias Dasie.SortedSet
   alias Dasie.RedBlackTree
+
+  property "member? returns true after insert into empty set" do
+    check all key <-
+                StreamData.one_of([
+                  StreamData.integer(),
+                  StreamData.binary(),
+                  StreamData.atom(:alphanumeric)
+                ]),
+              score <- StreamData.integer() do
+      set = SortedSet.new(key, score)
+      assert SortedSet.member?(set, key)
+    end
+  end
+
+  property "range finds key after insert into empty set" do
+    check all key <-
+                StreamData.one_of([
+                  StreamData.integer(),
+                  StreamData.binary(),
+                  StreamData.atom(:alphanumeric)
+                ]),
+              score <- StreamData.integer() do
+      set = SortedSet.new(key, score)
+      assert SortedSet.range(set, score..score) == [{key, score}]
+    end
+  end
+
+  property "member? returns true after insert into non-empty set" do
+    check all key <-
+                StreamData.one_of([
+                  StreamData.integer(),
+                  StreamData.binary(),
+                  StreamData.atom(:alphanumeric)
+                ]),
+              score <- StreamData.integer(),
+              set <- sorted_set_generator() do
+      set = SortedSet.insert(set, key, score)
+      assert SortedSet.member?(set, key)
+    end
+  end
+
+  property "range finds key after insert into non-empty set" do
+    check all key <-
+                StreamData.one_of([
+                  StreamData.integer(),
+                  StreamData.binary(),
+                  StreamData.atom(:alphanumeric)
+                ]),
+              score <- StreamData.integer(),
+              set <- sorted_set_generator() do
+      set = SortedSet.insert(set, key, score)
+      assert set |> SortedSet.range(score..score) |> Enum.member?({key, score})
+    end
+  end
 
   describe "new" do
     test "single element" do
@@ -92,6 +147,18 @@ defmodule Dasie.SortedSetTest do
 
       assert SortedSet.range(set, 10..30) == [{"key1", 10}, {"key4", 25}]
     end
+
+    test "includes key with score equal to first and last" do
+      key = <<17>>
+      score = 1
+
+      set =
+        "otherkey"
+        |> SortedSet.new(2)
+        |> SortedSet.insert(key, score)
+
+      assert set |> SortedSet.range(1..1) == [{key, score}]
+    end
   end
 
   describe "delete" do
@@ -113,6 +180,20 @@ defmodule Dasie.SortedSetTest do
     test "returns false if key doesn't exists" do
       set = SortedSet.new([{"key1", 400}, {"key2", 401}, {"key3", 200}, {"key4", 402}])
       refute SortedSet.member?(set, "key5")
+    end
+  end
+
+  def sorted_set_generator() do
+    gen all key_values <-
+              StreamData.nonempty(
+                StreamData.list_of(
+                  StreamData.tuple({
+                    StreamData.one_of([StreamData.integer(), StreamData.atom(:alphanumeric), StreamData.binary()]),
+                    StreamData.integer()
+                  })
+                )
+              ) do
+      SortedSet.new(key_values)
     end
   end
 end

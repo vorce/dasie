@@ -26,7 +26,7 @@ defmodule Dasie.SortedSet do
     }
   end
 
-  @doc "Create a new sorted set with specified keys and their scores"
+  @doc "Create a new sorted set with a list of `{keys, score}`"
   def new([first | rest]) do
     {key1, score1} = first
 
@@ -119,10 +119,7 @@ defmodule Dasie.SortedSet do
     |> Enum.map(&external_format/1)
   end
 
-  def range(%RedBlackTree{data: {score, _key}}, first, last, acc)
-      when score < first or score > last do
-    acc
-  end
+  def range(nil, _, _, acc), do: acc
 
   def range(
         %RedBlackTree{data: {score, _key} = element, left: nil, right: nil},
