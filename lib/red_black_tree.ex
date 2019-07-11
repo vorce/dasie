@@ -16,6 +16,13 @@ defmodule Dasie.RedBlackTree do
             right: nil,
             color: :black
 
+  @type t :: %__MODULE__{
+          data: any,
+          left: t,
+          right: t,
+          color: atom
+        }
+
   @doc "Create a new red-black tree"
   def new(data \\ nil) do
     %__MODULE__{data: data}
