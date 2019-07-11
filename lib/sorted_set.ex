@@ -129,7 +129,7 @@ defmodule Dasie.SortedSet do
     |> Enum.map(&external_format/1)
   end
 
-  @spec range(set :: __MODULE__.t(), first :: integer, last :: integer, acc :: list) :: list({any, integer})
+  @spec range(set :: __MODULE__.t() | nil, first :: integer, last :: integer, acc :: list) :: list({any, integer})
   def range(nil, _, _, acc), do: acc
 
   def range(
