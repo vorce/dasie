@@ -24,7 +24,7 @@ defmodule Dasie.SortedSet do
         }
 
   @doc "Create a new sorted set with key and score."
-  @spec new(key :: any, score :: integer) :: SortedSet.t()
+  @spec new(key :: any, score :: integer) :: __MODULE__.t()
   def new(key, score) do
     %__MODULE__{
       scores: RedBlackTree.new({score, key}),
@@ -33,7 +33,7 @@ defmodule Dasie.SortedSet do
   end
 
   @doc "Create a new sorted set with a list of `{keys, score}`"
-  @spec new(list({any, integer})) :: SortedSet.t()
+  @spec new(list({any, integer})) :: __MODULE__.t()
   def new([first | rest]) do
     {key1, score1} = first
 
@@ -55,7 +55,7 @@ defmodule Dasie.SortedSet do
   end
 
   @doc "Insert a new key, score into the sorted set"
-  @spec insert(set :: SortedSet.t(), key :: any, score :: integer) :: SortedSet.t()
+  @spec insert(set :: __MODULE__.t(), key :: any, score :: integer) :: __MODULE__.t()
   def insert(%__MODULE__{} = set, key, score) do
     existing_score = Map.get(set.keys, key)
 
@@ -70,7 +70,7 @@ defmodule Dasie.SortedSet do
   end
 
   @doc "Insert a list of {key, score} tuples into the sorted set"
-  @spec insert(set :: SortedSet.t(), list({any, integer})) :: SortedSet.t()
+  @spec insert(set :: __MODULE__.t(), list({any, integer})) :: __MODULE__.t()
   def insert(%__MODULE__{} = set, elements) when is_list(elements) do
     keys =
       Enum.reduce(elements, set.keys, fn {key, score}, acc ->
@@ -115,7 +115,7 @@ defmodule Dasie.SortedSet do
   end
 
   @doc "Return a list of keys and their scores in the set"
-  @spec to_list(set :: SortedSet.t()) :: list({any, integer})
+  @spec to_list(set :: __MODULE__.t()) :: list({any, integer})
   def to_list(%__MODULE__{keys: keys}) do
     keys
     |> Map.to_list()
@@ -129,7 +129,7 @@ defmodule Dasie.SortedSet do
     |> Enum.map(&external_format/1)
   end
 
-  @spec range(set :: SortedSet.t(), first :: integer, last :: integer, acc :: list) :: list({any, integer})
+  @spec range(set :: __MODULE__.t(), first :: integer, last :: integer, acc :: list) :: list({any, integer})
   def range(nil, _, _, acc), do: acc
 
   def range(
@@ -170,7 +170,7 @@ defmodule Dasie.SortedSet do
   end
 
   @doc "Deletes a key from the set"
-  @spec delete(set :: SortedSet.t(), key :: any) :: SortedSet.t()
+  @spec delete(set :: __MODULE__.t(), key :: any) :: __MODULE__.t()
   def delete(%__MODULE__{} = set, key) do
     existing_score = Map.get(set.keys, key)
 
@@ -185,7 +185,7 @@ defmodule Dasie.SortedSet do
   end
 
   @doc "Checks if key exists in the set"
-  @spec member?(set :: SortedSet.t(), key :: any) :: boolean
+  @spec member?(set :: __MODULE__.t(), key :: any) :: boolean
   def member?(%__MODULE__{} = set, key) do
     Map.has_key?(set.keys, key)
   end
