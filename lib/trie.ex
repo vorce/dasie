@@ -1,6 +1,7 @@
 defmodule Dasie.Trie do
   @moduledoc """
   Trie / prefix tree.
+  https://en.wikipedia.org/wiki/Trie
   """
 
   defstruct children: [],
@@ -43,6 +44,15 @@ defmodule Dasie.Trie do
         new_children = Enum.reject(trie.children, fn c -> c.data == node.data end)
         %__MODULE__{trie | children: [%__MODULE__{child | count: child.count + 1} | new_children]}
     end
+  end
+
+  @doc """
+  Insert many words into the trie
+  """
+  def insert_all(%__MODULE__{} = trie, words) when is_list(words) do
+    Enum.reduce(words, trie, fn word, acc ->
+      insert(acc, word)
+    end)
   end
 
   @doc "Returns all suffixes in the trie that matches the prefix"
@@ -135,5 +145,17 @@ defmodule Dasie.Trie do
 
   defp delete_node(children, node) do
     Enum.reject(children, fn child -> child == node end)
+  end
+
+  defimpl Collectable, for: Dasie.Trie do
+    def into(original) do
+      collector_fun = fn
+        trie, {:cont, elem} -> Dasie.Trie.insert(trie, elem)
+        trie, :done -> trie
+        _trie, :halt -> :ok
+      end
+
+      {original, collector_fun}
+    end
   end
 end

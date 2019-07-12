@@ -214,6 +214,20 @@ defmodule TrieTest do
     end
   end
 
+  describe "insert_all/2" do
+    test "equivalent to many insert" do
+      trie = Trie.new()
+      assert trie |> Trie.insert("hi") |> Trie.insert("hey") == trie |> Trie.insert_all(["hi", "hey"])
+    end
+  end
+
+  describe "collectable into" do
+    test "Trie" do
+      list = ["cake", "cookie", "donut", "cool"]
+      assert Enum.into(list, Trie.new()) == Trie.new() |> Trie.insert_all(list)
+    end
+  end
+
   def word_list_generator(opts \\ []) do
     string_options = Keyword.get(opts, :string, [])
     list_options = Keyword.get(opts, :list, [])
