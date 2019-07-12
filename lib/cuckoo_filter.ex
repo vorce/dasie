@@ -59,7 +59,6 @@ defmodule Dasie.CuckooFilter do
 
   @spec insert(cuckoo :: CuckooFilter.t(), item :: any) :: CuckooFilter.t() | {:error, :full}
   def insert(%CuckooFilter{} = cuckoo, item) do
-    # IO.puts("Trying to insert item #{inspect(item)} in #{inspect(cuckoo)}...")
     # each item x has two candidate buckets determined by hash functions h1(x) and h2(x)
     fingerprint = fingerprint(item, cuckoo.fingerprint_size)
     bucket_1 = item |> hash() |> rem(cuckoo.bucket_count)
@@ -138,10 +137,8 @@ defmodule Dasie.CuckooFilter do
     bucket_i = bucket.id |> bxor(hash(random_entry)) |> rem(cuckoo.bucket_count)
 
     if has_space?(cuckoo, bucket_i) do
-      # IO.inspect(bucket_id, label: "this has space (round #{relocation_round})")
       add_entry(cuckoo, bucket_i, random_entry)
     else
-      # IO.puts("No space in #{bucket_i}, relocating again (round #{relocation_round})..")
       relocate(bucket_i, cuckoo, random_entry, relocation_round + 1)
     end
   end

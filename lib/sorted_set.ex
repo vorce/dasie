@@ -19,8 +19,8 @@ defmodule Dasie.SortedSet do
             keys: nil
 
   @type t :: %__MODULE__{
-          scores: map,
-          keys: Dasie.RedBlackTree.t()
+          scores: Dasie.RedBlackTree.t() | nil,
+          keys: map | nil
         }
 
   @doc "Create a new empty sorted set"
