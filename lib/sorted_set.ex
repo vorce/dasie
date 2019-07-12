@@ -23,6 +23,10 @@ defmodule Dasie.SortedSet do
           keys: Dasie.RedBlackTree.t()
         }
 
+  @doc "Create a new empty sorted set"
+  @spec new() :: __MODULE__.t()
+  def new(), do: %__MODULE__{scores: RedBlackTree.new(), keys: %{}}
+
   @doc "Create a new sorted set with key and score."
   @spec new(key :: any, score :: integer) :: __MODULE__.t()
   def new(key, score) do
@@ -70,7 +74,7 @@ defmodule Dasie.SortedSet do
   end
 
   @doc "Insert a list of {key, score} tuples into the sorted set"
-  @spec insert(set :: __MODULE__.t(), list({any, integer})) :: __MODULE__.t()
+  @spec insert(set :: __MODULE__.t(), list({any, integer}) | {any, integer}) :: __MODULE__.t()
   def insert(%__MODULE__{} = set, elements) when is_list(elements) do
     keys =
       Enum.reduce(elements, set.keys, fn {key, score}, acc ->
@@ -83,6 +87,10 @@ defmodule Dasie.SortedSet do
       end)
 
     %__MODULE__{keys: keys, scores: scores}
+  end
+
+  def insert(%__MODULE__{} = set, {key, score}) do
+    insert(set, key, score)
   end
 
   defp insertion(old_keys, new_keys, {key, score}, acc) do
@@ -191,4 +199,16 @@ defmodule Dasie.SortedSet do
   end
 
   defp external_format({score, key}), do: {key, score}
+
+  defimpl Collectable, for: Dasie.SortedSet do
+    def into(original) do
+      collector_fun = fn
+        set, {:cont, elem} -> Dasie.SortedSet.insert(set, elem)
+        set, :done -> set
+        _set, :halt -> :ok
+      end
+
+      {original, collector_fun}
+    end
+  end
 end
