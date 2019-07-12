@@ -183,6 +183,13 @@ defmodule Dasie.SortedSetTest do
     end
   end
 
+  describe "collectable into" do
+    test "SortedSet" do
+      list = [{"cake", 5}, {"cookie", 8}, {"donut", 9}, {"cool", 1}]
+      assert Enum.into(list, SortedSet.new()) == SortedSet.new(list)
+    end
+  end
+
   def sorted_set_generator() do
     gen all key_values <-
               StreamData.nonempty(

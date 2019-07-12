@@ -59,7 +59,6 @@ defmodule Dasie.CuckooFilter do
 
   @spec insert(cuckoo :: CuckooFilter.t(), item :: any) :: CuckooFilter.t() | {:error, :full}
   def insert(%CuckooFilter{} = cuckoo, item) do
-    # IO.puts("Trying to insert item #{inspect(item)} in #{inspect(cuckoo)}...")
     # each item x has two candidate buckets determined by hash functions h1(x) and h2(x)
     fingerprint = fingerprint(item, cuckoo.fingerprint_size)
     bucket_1 = item |> hash() |> rem(cuckoo.bucket_count)
@@ -80,6 +79,13 @@ defmodule Dasie.CuckooFilter do
         |> Enum.random()
         |> relocate(cuckoo, fingerprint)
     end
+  end
+
+  @spec insert_all(cuckoo :: CuckooFilter.t(), items :: list(any)) :: CuckooFilter.t() | {:error, :full}
+  def insert_all(%CuckooFilter{} = cuckoo, items) when is_list(items) do
+    Enum.reduce(items, cuckoo, fn item, acc ->
+      insert(acc, item)
+    end)
   end
 
   @spec member?(cuckoo :: CuckooFilter.t(), item :: any) :: true | false
@@ -138,10 +144,8 @@ defmodule Dasie.CuckooFilter do
     bucket_i = bucket.id |> bxor(hash(random_entry)) |> rem(cuckoo.bucket_count)
 
     if has_space?(cuckoo, bucket_i) do
-      # IO.inspect(bucket_id, label: "this has space (round #{relocation_round})")
       add_entry(cuckoo, bucket_i, random_entry)
     else
-      # IO.puts("No space in #{bucket_i}, relocating again (round #{relocation_round})..")
       relocate(bucket_i, cuckoo, random_entry, relocation_round + 1)
     end
   end
@@ -154,5 +158,17 @@ defmodule Dasie.CuckooFilter do
   """
   def fingerprint(item, size \\ @default_fingerprint_length) do
     :erlang.phash2(item) &&& (1 <<< size) - 1
+  end
+
+  defimpl Collectable, for: Dasie.CuckooFilter do
+    def into(original) do
+      collector_fun = fn
+        filter, {:cont, elem} -> Dasie.CuckooFilter.insert(filter, elem)
+        filter, :done -> filter
+        _filter, :halt -> :ok
+      end
+
+      {original, collector_fun}
+    end
   end
 end

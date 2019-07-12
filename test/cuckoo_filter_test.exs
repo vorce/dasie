@@ -100,8 +100,10 @@ defmodule Dasie.CuckooFilterTest do
     end
   end
 
-  describe "relocate/4" do
-    # TODO test this...?
-    # It's a very internal function though...
+  describe "collectable into" do
+    test "CuckooFilter" do
+      list = ["crow", "parrot", "hawk", "eagle"]
+      assert Enum.into(list, CuckooFilter.new()) == CuckooFilter.new() |> CuckooFilter.insert_all(list)
+    end
   end
 end
