@@ -9,7 +9,7 @@ defmodule Dasie.LinkedList do
 
   @type t :: %__MODULE__{
           data: any,
-          next: t,
+          next: t | nil,
           empty: boolean
         }
 
