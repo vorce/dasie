@@ -81,6 +81,13 @@ defmodule Dasie.CuckooFilter do
     end
   end
 
+  @spec insert_all(cuckoo :: CuckooFilter.t(), items :: list(any)) :: CuckooFilter.t() | {:error, :full}
+  def insert_all(%CuckooFilter{} = cuckoo, items) when is_list(items) do
+    Enum.reduce(items, cuckoo, fn item, acc ->
+      insert(acc, item)
+    end)
+  end
+
   @spec member?(cuckoo :: CuckooFilter.t(), item :: any) :: true | false
   def member?(%CuckooFilter{} = cuckoo, item) do
     fingerprint = fingerprint(item, cuckoo.fingerprint_size)
@@ -151,5 +158,17 @@ defmodule Dasie.CuckooFilter do
   """
   def fingerprint(item, size \\ @default_fingerprint_length) do
     :erlang.phash2(item) &&& (1 <<< size) - 1
+  end
+
+  defimpl Collectable, for: Dasie.CuckooFilter do
+    def into(original) do
+      collector_fun = fn
+        filter, {:cont, elem} -> Dasie.CuckooFilter.insert(filter, elem)
+        filter, :done -> filter
+        _filter, :halt -> :ok
+      end
+
+      {original, collector_fun}
+    end
   end
 end
