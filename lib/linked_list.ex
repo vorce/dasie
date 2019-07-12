@@ -1,6 +1,8 @@
 defmodule Dasie.LinkedList do
   @moduledoc """
-  Linked list
+  Linked list.
+  https://en.wikipedia.org/wiki/Linked_list
+  This is a bit contrived, but was still fun to do.
   """
 
   defstruct data: nil,
@@ -18,7 +20,7 @@ defmodule Dasie.LinkedList do
   def new(), do: %__MODULE__{empty: true}
 
   @doc "Create a new linked list with some elements"
-  @spec new(elements :: list(any)) :: __MODULE__.t()
+  @spec new(elements :: any) :: __MODULE__.t()
   def new([element]) do
     new(element)
   end
@@ -27,20 +29,18 @@ defmodule Dasie.LinkedList do
     add(new(h), tail)
   end
 
-  @spec new(elements :: any) :: __MODULE__.t()
   def new(data) do
     %__MODULE__{data: data}
   end
 
   @doc "Adds an element to the end of the list"
-  @spec add(list :: __MODULE__.t(), elements :: list(any)) :: __MODULE__.t()
+  @spec add(list :: __MODULE__.t(), elements :: any) :: __MODULE__.t()
   def add(%__MODULE__{} = list, elements) when is_list(elements) do
     Enum.reduce(elements, list, fn element, acc ->
       add(acc, element)
     end)
   end
 
-  @spec add(list :: __MODULE__.t(), data :: any) :: __MODULE__.t()
   def add(%__MODULE__{empty: true} = list, data) do
     %__MODULE__{list | data: data, empty: false}
   end
