@@ -23,7 +23,7 @@ defmodule Dasie.Trie do
   end
 
   @doc "Insert a word into the trie"
-  @spec insert(trie :: __MODULE__.t(), word :: binary) :: __MODULE__.t()
+  @spec insert(trie :: __MODULE__.t(), word :: binary | list(binary)) :: __MODULE__.t()
   def insert(%__MODULE__{} = trie, word) when is_binary(word) do
     insert(trie, String.codepoints(word))
   end
@@ -105,7 +105,7 @@ defmodule Dasie.Trie do
   end
 
   @doc "Returns true if the word is in the trie, false if not"
-  @spec member?(trie :: __MODULE__.t(), word :: binary) :: boolean
+  @spec member?(trie :: __MODULE__.t(), word :: binary | list(binary)) :: boolean
   def member?(%__MODULE__{} = trie, word) when is_binary(word) do
     member?(trie, String.codepoints(word))
   end
@@ -134,7 +134,7 @@ defmodule Dasie.Trie do
   end
 
   @doc "Remove a word from the trie"
-  @spec delete(node :: __MODULE__.t(), word :: binary) :: __MODULE__.t()
+  @spec delete(node :: __MODULE__.t(), word :: binary | list(binary)) :: __MODULE__.t()
   def delete(%__MODULE__{} = trie, word) when is_binary(word) do
     if member?(trie, word) do
       delete(trie, String.codepoints(word))
