@@ -14,17 +14,29 @@ defmodule Dasie.RedBlackTree do
   defstruct data: nil,
             left: nil,
             right: nil,
-            color: :black
+            color: :black,
+            empty: false
 
   @type t :: %__MODULE__{
           data: any,
           left: t | nil,
           right: t | nil,
-          color: atom
+          color: atom,
+          empty: boolean
         }
 
+  @doc "Create a new empty red-black-tree"
+  def new(), do: %__MODULE__{empty: true}
+
   @doc "Create a new red-black tree"
-  def new(data \\ nil) do
+  @spec new(data :: any) :: __MODULE__.t()
+  def new(datas) when is_list(datas) do
+    Enum.reduce(datas, new(), fn item, acc ->
+      insert(acc, item)
+    end)
+  end
+
+  def new(data) do
     %__MODULE__{data: data}
   end
 
@@ -34,6 +46,7 @@ defmodule Dasie.RedBlackTree do
   def blacken(nil), do: nil
 
   @doc "Checks if an element is in the tree or not"
+  @spec member?(node :: __MODULE__.t(), element :: any, compare_fn :: function) :: boolean
   def member?(node, element, compare_fn \\ &default_compare_function/2)
 
   def member?(%__MODULE__{} = node, element, compare_fn) do
@@ -103,7 +116,14 @@ defmodule Dasie.RedBlackTree do
   def balance(node), do: node
 
   @doc "Insert an element into the tree"
-  def insert(tree, element, compare_fn \\ &default_compare_function/2) do
+  @spec insert(tree :: __MODULE__.t(), element :: any, compare_fn :: function) :: boolean
+  def insert(tree, element, compare_fn \\ &default_compare_function/2)
+
+  def insert(%__MODULE__{empty: true}, element, _compare_fn) do
+    new(element)
+  end
+
+  def insert(tree, element, compare_fn) do
     element |> do_insert(tree, compare_fn) |> blacken()
   end
 
@@ -264,5 +284,17 @@ defmodule Dasie.RedBlackTree do
           }),
         right: %__MODULE__{y | color: :black, left: u.right}
     }
+  end
+
+  defimpl Collectable, for: Dasie.RedBlackTree do
+    def into(original) do
+      collector_fun = fn
+        tree, {:cont, elem} -> Dasie.RedBlackTree.insert(tree, elem)
+        tree, :done -> tree
+        _tree, :halt -> :ok
+      end
+
+      {original, collector_fun}
+    end
   end
 end
