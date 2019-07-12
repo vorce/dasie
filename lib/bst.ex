@@ -8,7 +8,14 @@ defmodule Dasie.BST do
             left: nil,
             right: nil
 
+  @type t :: %__MODULE__{
+          data: any,
+          left: t | nil,
+          right: t | nil
+        }
+
   @doc "Create a new Binary search tree"
+  @spec new(data :: any) :: __MODULE__.t()
   def new(data \\ nil)
 
   def new([h | tail]) do
@@ -22,6 +29,7 @@ defmodule Dasie.BST do
   end
 
   @doc "Insert a node into the tree"
+  @spec insert(bst :: __MODULE__.t(), data :: any) :: __MODULE__.t()
   def insert(%__MODULE__{data: nil, left: nil, right: nil} = _tree, data) do
     %__MODULE__{data: data}
   end
@@ -47,6 +55,7 @@ defmodule Dasie.BST do
   end
 
   @doc "Finds an element in the tree, returns nil if it doesn't exist"
+  @spec find(bst :: __MODULE__.t(), data :: any) :: __MODULE__.t() | nil
   def find(%__MODULE__{data: data, left: nil, right: nil}, element) when data != element, do: nil
   def find(%__MODULE__{data: data} = tree, element) when data == element, do: tree
 
@@ -59,6 +68,7 @@ defmodule Dasie.BST do
   end
 
   @doc "Deletes an element in the tree"
+  @spec delete(bst :: __MODULE__.t(), data :: any) :: __MODULE__.t()
   def delete(%__MODULE__{data: data, left: nil, right: nil}, element) when data == element do
     nil
   end
