@@ -6,7 +6,7 @@ defmodule Dasie.LinkedListTest do
 
   describe "new/0" do
     test "returns an empty linked list" do
-      assert LinkedList.new() == %LinkedList{}
+      assert LinkedList.new() == %LinkedList{empty: true}
     end
   end
 
@@ -98,6 +98,13 @@ defmodule Dasie.LinkedListTest do
 
         refute list |> LinkedList.values() |> Enum.member?(delete_element)
       end
+    end
+  end
+
+  describe "collectable into" do
+    test "LinkedList" do
+      list = [1, 2, 3]
+      assert Enum.into(list, LinkedList.new()) == LinkedList.new(list)
     end
   end
 end
