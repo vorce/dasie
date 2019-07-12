@@ -116,7 +116,7 @@ defmodule Dasie.RedBlackTree do
   def balance(node), do: node
 
   @doc "Insert an element into the tree"
-  @spec insert(tree :: __MODULE__.t(), element :: any, compare_fn :: function) :: boolean
+  @spec insert(tree :: __MODULE__.t(), element :: any, compare_fn :: function) :: __MODULE__.t()
   def insert(tree, element, compare_fn \\ &default_compare_function/2)
 
   def insert(%__MODULE__{empty: true}, element, _compare_fn) do
