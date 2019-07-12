@@ -1,6 +1,7 @@
 defmodule Dasie.Trie do
   @moduledoc """
   Trie / prefix tree.
+  https://en.wikipedia.org/wiki/Trie
   """
 
   defstruct children: [],
@@ -8,12 +9,21 @@ defmodule Dasie.Trie do
             terminates?: false,
             count: 1
 
+  @type t :: %__MODULE__{
+    children: list(t),
+    data: any,
+    terminates?: boolean,
+    count: integer
+  }
+
   @doc "Creates a new trie"
+  @spec new() :: __MODULE__.t()
   def new() do
     %__MODULE__{}
   end
 
   @doc "Insert a word into the trie"
+  @spec insert(trie :: __MODULE__.t(), word :: binary | list(binary)) :: __MODULE__.t()
   def insert(%__MODULE__{} = trie, word) when is_binary(word) do
     insert(trie, String.codepoints(word))
   end
@@ -45,7 +55,18 @@ defmodule Dasie.Trie do
     end
   end
 
+  @doc """
+  Insert many words into the trie
+  """
+  @spec insert_all(trie :: __MODULE__.t(), words :: list(binary)) :: __MODULE__.t()
+  def insert_all(%__MODULE__{} = trie, words) when is_list(words) do
+    Enum.reduce(words, trie, fn word, acc ->
+      insert(acc, word)
+    end)
+  end
+
   @doc "Returns all suffixes in the trie that matches the prefix"
+  @spec valid_words(trie :: __MODULE__.t(), prefix :: binary) :: list(binary)
   def valid_words(%__MODULE__{} = trie, prefix) when is_binary(prefix) do
     valid_words(trie, String.codepoints(prefix), [])
   end
@@ -84,6 +105,7 @@ defmodule Dasie.Trie do
   end
 
   @doc "Returns true if the word is in the trie, false if not"
+  @spec member?(trie :: __MODULE__.t(), word :: binary | list(binary)) :: boolean
   def member?(%__MODULE__{} = trie, word) when is_binary(word) do
     member?(trie, String.codepoints(word))
   end
@@ -100,7 +122,11 @@ defmodule Dasie.Trie do
     end
   end
 
-  @doc "Return a child of the node with the specified letter. Returns nil if there is not child that matches."
+  @doc """
+  Return a child of the node with the specified letter.
+  Returns nil if there is no child that matches.
+  """
+  @spec child(node :: __MODULE__.t(), letter :: any) :: __MODULE__.t() | nil
   def child(node, letter) do
     Enum.find(node.children, fn child ->
       child.data == letter
@@ -108,6 +134,7 @@ defmodule Dasie.Trie do
   end
 
   @doc "Remove a word from the trie"
+  @spec delete(node :: __MODULE__.t(), word :: binary | list(binary)) :: __MODULE__.t()
   def delete(%__MODULE__{} = trie, word) when is_binary(word) do
     if member?(trie, word) do
       delete(trie, String.codepoints(word))
@@ -135,5 +162,17 @@ defmodule Dasie.Trie do
 
   defp delete_node(children, node) do
     Enum.reject(children, fn child -> child == node end)
+  end
+
+  defimpl Collectable, for: Dasie.Trie do
+    def into(original) do
+      collector_fun = fn
+        trie, {:cont, elem} -> Dasie.Trie.insert(trie, elem)
+        trie, :done -> trie
+        _trie, :halt -> :ok
+      end
+
+      {original, collector_fun}
+    end
   end
 end

@@ -15,8 +15,11 @@ Implementations of some (persistent) data structures for fun and learning. I don
 - [Sorted set](lib/sorted_set.ex)
 - [Cuckoo filter](lib/cuckoo_filter.ex)
 
-Example usage is in the [tests](test/). Testing has been a focus since the start of this project.
+## Example usage
+
+I plan on writing up some small examples, but in the mean time it's best to look at the [tests](test/). Testing has been a focus since the start of this project.
 There should be plenty of example based tests, and some property based ones for each implementation.
+The module docs are not terrible either.
 
 
 `*` = Unfinished/WIP

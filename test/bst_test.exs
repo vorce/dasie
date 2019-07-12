@@ -110,6 +110,13 @@ defmodule Dasie.BSTTest do
     end
   end
 
+  describe "collectable into" do
+    test "BST" do
+      list = [1, 2, 3]
+      assert Enum.into(list, BST.new()) == BST.new(list)
+    end
+  end
+
   @min_value -1_000_000
   @max_value 1_000_000
   defp bst_generator() do

@@ -1,14 +1,26 @@
 defmodule Dasie.LinkedList do
   @moduledoc """
-  Linked list
+  Linked list.
+  https://en.wikipedia.org/wiki/Linked_list
+  This is a bit contrived, but was still fun to do.
   """
 
   defstruct data: nil,
-            next: nil
+            next: nil,
+            empty: false
 
-  @doc "Create a new linked list"
-  def new(data \\ nil)
+  @type t :: %__MODULE__{
+          data: any,
+          next: t | nil,
+          empty: boolean
+        }
 
+  @doc "Create a new empty linked list"
+  @spec new() :: __MODULE__.t()
+  def new(), do: %__MODULE__{empty: true}
+
+  @doc "Create a new linked list with some elements"
+  @spec new(elements :: any) :: __MODULE__.t()
   def new([element]) do
     new(element)
   end
@@ -22,10 +34,15 @@ defmodule Dasie.LinkedList do
   end
 
   @doc "Adds an element to the end of the list"
+  @spec add(list :: __MODULE__.t(), elements :: any) :: __MODULE__.t()
   def add(%__MODULE__{} = list, elements) when is_list(elements) do
     Enum.reduce(elements, list, fn element, acc ->
       add(acc, element)
     end)
+  end
+
+  def add(%__MODULE__{empty: true} = list, data) do
+    %__MODULE__{list | data: data, empty: false}
   end
 
   def add(%__MODULE__{next: nil} = list, data) do
@@ -37,6 +54,7 @@ defmodule Dasie.LinkedList do
   end
 
   @doc "Returns the first element in the list"
+  @spec first(list :: __MODULE__.t()) :: any
   def first(%__MODULE__{data: data}), do: data
 
   def last(%__MODULE__{next: nil, data: data}), do: data
@@ -46,6 +64,7 @@ defmodule Dasie.LinkedList do
   end
 
   @doc "Reverses the linked list"
+  @spec reverse(list :: __MODULE__.t()) :: __MODULE__.t()
   def reverse(list) do
     list
     |> values()
@@ -54,13 +73,15 @@ defmodule Dasie.LinkedList do
   end
 
   @doc "Returns the items in the list"
+  @spec values(list :: __MODULE__.t()) :: list(any)
   def values(%__MODULE__{next: nil, data: data}), do: [data]
 
   def values(%__MODULE__{next: next, data: data}) do
-    [data] ++ values(next)
+    [data | values(next)]
   end
 
   @doc "Deletes an element from the list"
+  @spec delete(list :: __MODULE__.t(), element :: any) :: __MODULE__.t()
   def delete(%__MODULE__{next: nil, data: data}, element) when data == element do
     new()
   end
@@ -71,5 +92,17 @@ defmodule Dasie.LinkedList do
 
   def delete(%__MODULE__{next: next, data: data} = list, element) when data != element do
     %__MODULE__{list | next: delete(next, element)}
+  end
+
+  defimpl Collectable, for: Dasie.LinkedList do
+    def into(original) do
+      collector_fun = fn
+        linked_list, {:cont, elem} -> Dasie.LinkedList.add(linked_list, elem)
+        linked_list, :done -> linked_list
+        _linked_list, :halt -> :ok
+      end
+
+      {original, collector_fun}
+    end
   end
 end

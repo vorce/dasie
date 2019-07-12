@@ -783,42 +783,27 @@ defmodule Dasie.RedBlackTreeTest do
            }
   end
 
+  describe "collectable into" do
+    test "RedBlackTree" do
+      list = ["cake", "cookie", "donut", "cool"]
+      assert Enum.into(list, RedBlackTree.new()) == RedBlackTree.new(list)
+    end
+  end
+
   def red_black_tree_w_deletes_generator() do
     gen all values <- StreamData.nonempty(StreamData.uniq_list_of(StreamData.integer(-10_000..10_000), length: 4..100)) do
       [first | rest] = values
-      # |> IO.inspect(label: "values")
 
       tree =
         Enum.reduce(rest, RedBlackTree.new(first), fn value, acc ->
           RedBlackTree.insert(acc, value)
         end)
 
-      # |> IO.inspect(label: "tree")
-
       all_paths_have_same_black_nodes?(tree)
 
       delete1 = Enum.at(values, :rand.uniform(length(values) - 2))
       delete2 = List.first(values)
       delete3 = List.last(values)
-
-      # IO.inspect([nr_items: length(values), delete1: delete1, delete2: delete2, delete3: delete3], label: "delete items")
-
-      # tree1 = RedBlackTree.delete(tree, delete1)
-      # |> IO.inspect(label: "after delete1")
-
-      # all_paths_have_same_black_nodes?(tree1)
-
-      # tree2 = RedBlackTree.delete(tree1, delete2)
-      # |> IO.inspect(label: "after delete2")
-
-      # all_paths_have_same_black_nodes?(tree2)
-
-      # tree3 = RedBlackTree.delete(tree2, delete3)
-      # |> IO.inspect(label: "after delete3")
-
-      # all_paths_have_same_black_nodes?(tree3)
-
-      # tree3
 
       tree
       |> RedBlackTree.delete(delete1)

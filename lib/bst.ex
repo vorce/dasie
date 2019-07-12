@@ -1,13 +1,21 @@
 defmodule Dasie.BST do
   @moduledoc """
   Binary Search Tree
+  https://en.wikipedia.org/wiki/Binary_search_tree
   """
 
   defstruct data: nil,
             left: nil,
             right: nil
 
+  @type t :: %__MODULE__{
+          data: any,
+          left: t | nil,
+          right: t | nil
+        }
+
   @doc "Create a new Binary search tree"
+  @spec new(data :: any) :: __MODULE__.t()
   def new(data \\ nil)
 
   def new([h | tail]) do
@@ -21,6 +29,7 @@ defmodule Dasie.BST do
   end
 
   @doc "Insert a node into the tree"
+  @spec insert(bst :: __MODULE__.t(), data :: any) :: __MODULE__.t()
   def insert(%__MODULE__{data: nil, left: nil, right: nil} = _tree, data) do
     %__MODULE__{data: data}
   end
@@ -46,6 +55,7 @@ defmodule Dasie.BST do
   end
 
   @doc "Finds an element in the tree, returns nil if it doesn't exist"
+  @spec find(bst :: __MODULE__.t(), data :: any) :: __MODULE__.t() | nil
   def find(%__MODULE__{data: data, left: nil, right: nil}, element) when data != element, do: nil
   def find(%__MODULE__{data: data} = tree, element) when data == element, do: tree
 
@@ -58,6 +68,7 @@ defmodule Dasie.BST do
   end
 
   @doc "Deletes an element in the tree"
+  @spec delete(bst :: __MODULE__.t(), data :: any) :: __MODULE__.t()
   def delete(%__MODULE__{data: data, left: nil, right: nil}, element) when data == element do
     nil
   end
@@ -86,4 +97,16 @@ defmodule Dasie.BST do
 
   defp smallest(%__MODULE__{left: nil} = tree), do: tree
   defp smallest(%__MODULE__{left: left}), do: smallest(left)
+
+  defimpl Collectable, for: Dasie.BST do
+    def into(original) do
+      collector_fun = fn
+        bst, {:cont, elem} -> Dasie.BST.insert(bst, elem)
+        bst, :done -> bst
+        _bst, :halt -> :ok
+      end
+
+      {original, collector_fun}
+    end
+  end
 end
