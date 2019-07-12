@@ -1,6 +1,7 @@
 defmodule Dasie.BST do
   @moduledoc """
   Binary Search Tree
+  https://en.wikipedia.org/wiki/Binary_search_tree
   """
 
   defstruct data: nil,
@@ -86,4 +87,16 @@ defmodule Dasie.BST do
 
   defp smallest(%__MODULE__{left: nil} = tree), do: tree
   defp smallest(%__MODULE__{left: left}), do: smallest(left)
+
+  defimpl Collectable, for: Dasie.BST do
+    def into(original) do
+      collector_fun = fn
+        bst, {:cont, elem} -> Dasie.BST.insert(bst, elem)
+        bst, :done -> bst
+        _bst, :halt -> :ok
+      end
+
+      {original, collector_fun}
+    end
+  end
 end
