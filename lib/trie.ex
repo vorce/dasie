@@ -10,11 +10,11 @@ defmodule Dasie.Trie do
             count: 1
 
   @type t :: %__MODULE__{
-    children: list(t),
-    data: any,
-    terminates?: boolean,
-    count: integer
-  }
+          children: list(t),
+          data: any,
+          terminates?: boolean,
+          count: integer
+        }
 
   @doc "Creates a new trie"
   @spec new() :: __MODULE__.t()
