@@ -14,6 +14,7 @@ Implementations of some (persistent) data structures for fun and learning. I don
 - [Red-black Tree](lib/red_black_tree.ex)
 - [Sorted set](lib/sorted_set.ex)
 - [Cuckoo filter](lib/cuckoo_filter.ex)
+- [Maybe](lib/maybe.ex)
 
 ## Example usage
 
