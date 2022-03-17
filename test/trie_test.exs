@@ -108,7 +108,7 @@ defmodule TrieTest do
 
     # http://www.mathcs.emory.edu/~cheung/Courses/323/Syllabus/Text/trie01.html
     property "number of leaf nodes == number of words" do
-      check all words <- word_list_generator(list: [min_length: 10], string: [min_length: 3]) do
+      check all(words <- word_list_generator(list: [min_length: 10], string: [min_length: 3])) do
         trie =
           Enum.reduce(words, Trie.new(), fn word, acc ->
             Trie.insert(acc, word)
@@ -119,7 +119,7 @@ defmodule TrieTest do
     end
 
     property "height of the trie == length of the longest string" do
-      check all words <- word_list_generator(list: [min_length: 10], string: [min_length: 3]) do
+      check all(words <- word_list_generator(list: [min_length: 10], string: [min_length: 3])) do
         trie =
           Enum.reduce(words, Trie.new(), fn word, acc ->
             Trie.insert(acc, word)

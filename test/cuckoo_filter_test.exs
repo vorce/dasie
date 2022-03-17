@@ -18,7 +18,7 @@ defmodule Dasie.CuckooFilterTest do
   describe "insert/2" do
     test "can insert single entry" do
       result = CuckooFilter.insert(CuckooFilter.new(), "hello")
-      assert Map.size(result.buckets) == 1
+      assert map_size(result.buckets) == 1
 
       bucket = result.buckets |> Map.values() |> List.first()
       assert MapSet.size(bucket.entries) == 1
@@ -54,7 +54,7 @@ defmodule Dasie.CuckooFilterTest do
 
   describe "member?/2" do
     property "returns true if the item was inserted" do
-      check all item <- StreamData.binary() do
+      check all(item <- StreamData.binary()) do
         cuckoo =
           CuckooFilter.new()
           |> CuckooFilter.insert(item)
@@ -64,7 +64,7 @@ defmodule Dasie.CuckooFilterTest do
     end
 
     test "returns false if the item was not inserted" do
-      check all item <- StreamData.binary() do
+      check all(item <- StreamData.binary()) do
         refute CuckooFilter.new()
                |> CuckooFilter.insert(item)
                |> CuckooFilter.member?("something highly improbable to be generated here :)")
@@ -87,8 +87,10 @@ defmodule Dasie.CuckooFilterTest do
     end
 
     property "removes item" do
-      check all item <- StreamData.binary(),
-                keeper <- StreamData.binary() do
+      check all(
+              item <- StreamData.binary(),
+              keeper <- StreamData.binary()
+            ) do
         cuckoo =
           CuckooFilter.new()
           |> CuckooFilter.insert(item)
