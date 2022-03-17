@@ -18,7 +18,7 @@ defmodule Dasie.CuckooFilterTest do
   describe "insert/2" do
     test "can insert single entry" do
       result = CuckooFilter.insert(CuckooFilter.new(), "hello")
-      assert Map.size(result.buckets) == 1
+      assert map_size(result.buckets) == 1
 
       bucket = result.buckets |> Map.values() |> List.first()
       assert MapSet.size(bucket.entries) == 1
