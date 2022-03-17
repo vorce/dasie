@@ -799,7 +799,7 @@ defmodule Dasie.RedBlackTreeTest do
           RedBlackTree.insert(acc, value)
         end)
 
-      all_paths_have_same_black_nodes?(tree)
+      assert all_paths_have_same_black_nodes?(tree)
 
       delete1 = Enum.at(values, :rand.uniform(length(values) - 2))
       delete2 = List.first(values)
