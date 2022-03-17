@@ -74,7 +74,7 @@ defmodule Dasie.BSTTest do
     end
 
     property "every node in the right subtree is larger than the current node and every node on the left subtree is smaller than the current node" do
-      check all tree <- bst_generator() do
+      check all(tree <- bst_generator()) do
         assert valid_bst?(tree)
       end
     end
@@ -120,8 +120,10 @@ defmodule Dasie.BSTTest do
   @min_value -1_000_000
   @max_value 1_000_000
   defp bst_generator() do
-    gen all values <-
-              StreamData.nonempty(StreamData.list_of(StreamData.integer(@min_value..@max_value), min_length: 100)) do
+    gen all(
+          values <-
+            StreamData.nonempty(StreamData.list_of(StreamData.integer(@min_value..@max_value), min_length: 100))
+        ) do
       [head | rest] = values
 
       Enum.reduce(rest, BST.new(head), fn value, acc ->

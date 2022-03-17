@@ -178,13 +178,13 @@ defmodule Dasie.RedBlackTreeTest do
     end
 
     property "every red node has black children" do
-      check all tree <- red_black_tree_generator() do
+      check all(tree <- red_black_tree_generator()) do
         assert every_red_node_has_black_children?(tree)
       end
     end
 
     property "all paths have the same number of black nodes" do
-      check all tree <- red_black_tree_generator() do
+      check all(tree <- red_black_tree_generator()) do
         assert all_paths_have_same_black_nodes?(tree)
       end
     end
@@ -584,13 +584,13 @@ defmodule Dasie.RedBlackTreeTest do
     end
 
     property "every red node has black children" do
-      check all tree <- red_black_tree_w_deletes_generator() do
+      check all(tree <- red_black_tree_w_deletes_generator()) do
         assert every_red_node_has_black_children?(tree)
       end
     end
 
     property "all paths have the same number of black nodes" do
-      check all tree <- red_black_tree_w_deletes_generator() do
+      check all(tree <- red_black_tree_w_deletes_generator()) do
         assert all_paths_have_same_black_nodes?(tree)
       end
     end
@@ -696,7 +696,7 @@ defmodule Dasie.RedBlackTreeTest do
   end
 
   def red_black_tree_generator() do
-    gen all values <- StreamData.nonempty(StreamData.list_of(StreamData.integer())) do
+    gen all(values <- StreamData.nonempty(StreamData.list_of(StreamData.integer()))) do
       [first | rest] = values
 
       Enum.reduce(rest, RedBlackTree.new(first), fn value, acc ->
@@ -791,7 +791,7 @@ defmodule Dasie.RedBlackTreeTest do
   end
 
   def red_black_tree_w_deletes_generator() do
-    gen all values <- StreamData.nonempty(StreamData.uniq_list_of(StreamData.integer(-10_000..10_000), length: 4..100)) do
+    gen all(values <- StreamData.nonempty(StreamData.uniq_list_of(StreamData.integer(-10_000..10_000), length: 4..100))) do
       [first | rest] = values
 
       tree =

@@ -70,7 +70,7 @@ defmodule Dasie.LinkedListTest do
     end
 
     property "reverse twice is the same as the original" do
-      check all items <- StreamData.list_of(StreamData.binary()) do
+      check all(items <- StreamData.list_of(StreamData.binary())) do
         list = LinkedList.new(items)
         assert list |> LinkedList.reverse() |> LinkedList.reverse() == list
       end
@@ -88,7 +88,7 @@ defmodule Dasie.LinkedListTest do
     end
 
     property "a deleted element is no longer present" do
-      check all items <- StreamData.nonempty(StreamData.uniq_list_of(StreamData.integer())) do
+      check all(items <- StreamData.nonempty(StreamData.uniq_list_of(StreamData.integer()))) do
         delete_element = Enum.random(items)
 
         list =
