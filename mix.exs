@@ -28,7 +28,7 @@ defmodule Dasie.Mixfile do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:excoveralls, "~> 0.8", only: :test},
+      {:excoveralls, "~> 2.2", only: :test},
       {:stream_data, "~> 0.4", only: :test},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false}
     ]
