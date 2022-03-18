@@ -1,0 +1,27 @@
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: erlef/setup-elixir@v1
+        with:
+          otp-version: "24"
+          elixir-version: "1.13"
+      - name: Get dialyzer cache
+        uses: actions/cache@v2
+        with:
+          path: priv/plts
+          key: build-otp24-elixir1.13-dialyzer
+      - name: Install Dependencies
+        run: |
+          mix local.rebar --force
+          mix local.hex --force
+          mix deps.get
+      - name: dialyzer
+        run: mix dialyzer --halt-exit-status
+      - name: Run Tests
+        run: MIX_ENV=test mix coveralls.github
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
