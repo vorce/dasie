@@ -188,6 +188,13 @@ defmodule TrieTest do
 
       assert List.first(updated_trie.children).count == 1
     end
+
+    test "ignores non-member" do
+      trie = Trie.insert(Trie.new(), "hello")
+
+      assert Trie.delete(trie, "non-member") == trie
+      assert Trie.delete(trie, []) == trie
+    end
   end
 
   describe "child/2" do
@@ -217,7 +224,9 @@ defmodule TrieTest do
   describe "insert_all/2" do
     test "equivalent to many insert" do
       trie = Trie.new()
-      assert trie |> Trie.insert("hi") |> Trie.insert("hey") == trie |> Trie.insert_all(["hi", "hey"])
+
+      assert trie |> Trie.insert("hi") |> Trie.insert("hey") ==
+               trie |> Trie.insert_all(["hi", "hey"])
     end
   end
 
