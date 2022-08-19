@@ -577,7 +577,11 @@ defmodule Dasie.RedBlackTreeTest do
 
       tree2 = RedBlackTree.delete(tree1, delete2)
 
-      assert tree2 == %RedBlackTree{color: :black, data: 0, right: %RedBlackTree{color: :red, data: 4169}}
+      assert tree2 == %RedBlackTree{
+               color: :black,
+               data: 0,
+               right: %RedBlackTree{color: :red, data: 4169}
+             }
 
       tree3 = RedBlackTree.delete(tree2, delete3)
       assert tree3 == %RedBlackTree{color: :black, data: 0}
@@ -650,7 +654,8 @@ defmodule Dasie.RedBlackTreeTest do
   end
 
   def every_red_node_has_black_children?(%RedBlackTree{color: :black} = node) do
-    every_red_node_has_black_children?(node.left) && every_red_node_has_black_children?(node.right)
+    every_red_node_has_black_children?(node.left) &&
+      every_red_node_has_black_children?(node.right)
   end
 
   def every_red_node_has_black_children?(_) do
@@ -783,15 +788,53 @@ defmodule Dasie.RedBlackTreeTest do
            }
   end
 
-  describe "collectable into" do
-    test "RedBlackTree" do
+  describe "collectable" do
+    test "into" do
       list = ["cake", "cookie", "donut", "cool"]
       assert Enum.into(list, RedBlackTree.new()) == RedBlackTree.new(list)
     end
   end
 
+  describe "enumerable" do
+    test "count" do
+      list = ["cake", "cookie", "donut", "cool"]
+      rbt = RedBlackTree.new(list)
+
+      assert Enum.count(rbt) == Enum.count(list)
+    end
+
+    test "member?" do
+      rbt = RedBlackTree.new(["a", "b", "c"])
+
+      assert Enum.member?(rbt, "a")
+      assert Enum.member?(rbt, "b")
+      assert Enum.member?(rbt, "c")
+      refute Enum.member?(rbt, "x")
+    end
+
+    test "slice" do
+      rbt = RedBlackTree.new(["a", "b", "c"])
+
+      # Not very intuitive, original order is unknown.
+      assert Enum.slice(rbt, 1..1) == ["a"]
+    end
+
+    test "reduce" do
+      rbt = RedBlackTree.new(["aa", "bbb", "c"])
+
+      assert Enum.reduce(rbt, %{}, fn node, acc -> Map.put(acc, node, String.length(node)) end) == %{
+               "aa" => 2,
+               "bbb" => 3,
+               "c" => 1
+             }
+    end
+  end
+
   def red_black_tree_w_deletes_generator() do
-    gen all(values <- StreamData.nonempty(StreamData.uniq_list_of(StreamData.integer(-10_000..10_000), length: 4..100))) do
+    gen all(
+          values <-
+            StreamData.nonempty(StreamData.uniq_list_of(StreamData.integer(-10_000..10_000), length: 4..100))
+        ) do
       [first | rest] = values
 
       tree =
