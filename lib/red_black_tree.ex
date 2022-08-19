@@ -156,7 +156,7 @@ defmodule Dasie.RedBlackTree do
   end
 
   @doc "Deletes an element in the tree"
-  @spec delete(__MODULE__.t(), any(), compare_function) :: __MODULE__.t()
+  @spec delete(__MODULE__.t(), any(), compare_function) :: __MODULE__.t() | nil
   def delete(tree, element, compare_fn \\ &default_compare_function/2) do
     element |> do_delete(tree, compare_fn) |> blacken()
   end
