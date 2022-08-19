@@ -796,6 +796,14 @@ defmodule Dasie.RedBlackTreeTest do
     Enum.each(rbt_list, fn e -> assert e in elements end)
   end
 
+  test "find/3" do
+    elements = ["taco", "hamburger", "pizza", "pasta", "hotdog", "sallad"]
+    rbt = RedBlackTree.new(elements)
+
+    assert RedBlackTree.find(rbt, fn e -> e == "pasta" end) == "pasta"
+    refute RedBlackTree.find(rbt, fn e -> e == "nah" end)
+  end
+
   describe "collectable" do
     test "into" do
       list = ["cake", "cookie", "donut", "cool"]
