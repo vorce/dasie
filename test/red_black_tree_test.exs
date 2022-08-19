@@ -788,6 +788,14 @@ defmodule Dasie.RedBlackTreeTest do
            }
   end
 
+  test "to_list/1" do
+    elements = ["taco", "hamburger", "pizza"]
+    rbt_list = elements |> RedBlackTree.new() |> RedBlackTree.to_list()
+
+    assert Enum.count(elements) == Enum.count(rbt_list)
+    Enum.each(rbt_list, fn e -> assert e in elements end)
+  end
+
   describe "collectable" do
     test "into" do
       list = ["cake", "cookie", "donut", "cool"]
