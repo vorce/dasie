@@ -286,6 +286,14 @@ defmodule Dasie.RedBlackTree do
     }
   end
 
+  def to_list(%__MODULE__{empty: true}), do: []
+
+  def to_list(%__MODULE__{} = node) do
+    [node.data | to_list(node.left) ++ to_list(node.right)]
+  end
+
+  def to_list(nil), do: []
+
   defimpl Collectable, for: Dasie.RedBlackTree do
     def into(original) do
       collector_fun = fn
@@ -295,6 +303,24 @@ defmodule Dasie.RedBlackTree do
       end
 
       {original, collector_fun}
+    end
+  end
+
+  defimpl Enumerable, for: Dasie.RedBlackTree do
+    def count(_rbt) do
+      {:error, __MODULE__}
+    end
+
+    def member?(_rbt, _value) do
+      {:error, __MODULE__}
+    end
+
+    def slice(_rbt) do
+      {:error, __MODULE__}
+    end
+
+    def reduce(rbt, acc, fun) do
+      Enumerable.List.reduce(Dasie.RedBlackTree.to_list(rbt), acc, fun)
     end
   end
 end
