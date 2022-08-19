@@ -294,6 +294,20 @@ defmodule Dasie.RedBlackTree do
 
   def to_list(nil), do: []
 
+  def find(rbt, default \\ nil, fun)
+
+  def find(nil, default, _fun), do: default
+  def find(%__MODULE__{empty: true}, default, _fun), do: default
+
+  def find(%__MODULE__{data: data, left: left, right: right}, default, fun) do
+    if fun.(data) do
+      data
+    else
+      left_find = find(left, default, fun)
+      if left_find == default, do: find(right, default, fun), else: left_find
+    end
+  end
+
   defimpl Collectable, for: Dasie.RedBlackTree do
     def into(original) do
       collector_fun = fn
