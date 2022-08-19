@@ -25,6 +25,8 @@ defmodule Dasie.RedBlackTree do
           empty: boolean
         }
 
+  @type compare_function :: (any(), any() -> 1 | 0 | -1)
+
   @doc "Create a new empty red-black-tree"
   def new(), do: %__MODULE__{empty: true}
 
@@ -46,7 +48,7 @@ defmodule Dasie.RedBlackTree do
   def blacken(nil), do: nil
 
   @doc "Checks if an element is in the tree or not"
-  @spec member?(node :: __MODULE__.t(), element :: any, compare_fn :: function) :: boolean
+  @spec member?(__MODULE__.t(), any, compare_function) :: boolean
   def member?(node, element, compare_fn \\ &default_compare_function/2)
 
   def member?(%__MODULE__{} = node, element, compare_fn) do
@@ -116,7 +118,7 @@ defmodule Dasie.RedBlackTree do
   def balance(node), do: node
 
   @doc "Insert an element into the tree"
-  @spec insert(tree :: __MODULE__.t(), element :: any, compare_fn :: function) :: __MODULE__.t()
+  @spec insert(__MODULE__.t(), any, compare_function) :: __MODULE__.t()
   def insert(tree, element, compare_fn \\ &default_compare_function/2)
 
   def insert(%__MODULE__{empty: true}, element, _compare_fn) do
@@ -144,6 +146,7 @@ defmodule Dasie.RedBlackTree do
     end
   end
 
+  @spec default_compare_function(any(), any()) :: -1 | 0 | 1
   def default_compare_function(data1, data2) do
     cond do
       data1 > data2 -> 1
@@ -153,6 +156,7 @@ defmodule Dasie.RedBlackTree do
   end
 
   @doc "Deletes an element in the tree"
+  @spec delete(__MODULE__.t(), any(), compare_function) :: __MODULE__.t()
   def delete(tree, element, compare_fn \\ &default_compare_function/2) do
     element |> do_delete(tree, compare_fn) |> blacken()
   end
@@ -286,6 +290,10 @@ defmodule Dasie.RedBlackTree do
     }
   end
 
+  @doc """
+  Returns a list of all nodes' data
+  """
+  @spec to_list(__MODULE__.t()) :: list(any)
   def to_list(%__MODULE__{empty: true}), do: []
 
   def to_list(%__MODULE__{} = node) do
@@ -294,6 +302,10 @@ defmodule Dasie.RedBlackTree do
 
   def to_list(nil), do: []
 
+  @doc """
+  Find a node that matches fun
+  """
+  @spec find(__MODULE__.t() | nil, any(), (any() -> boolean())) :: any()
   def find(rbt, default \\ nil, fun)
 
   def find(nil, default, _fun), do: default
