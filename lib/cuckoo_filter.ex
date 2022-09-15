@@ -11,7 +11,7 @@ defmodule Dasie.CuckooFilter do
   - https://www.cs.cmu.edu/%7Edga/papers/cuckoo-conext2014.pdf
   - https://github.com/bdupras/guava-probably/blob/master/src/main/java/com/duprasville/guava/probably/CuckooFilter.java
   """
-  use Bitwise
+  import Bitwise
   alias Dasie.CuckooFilter
 
   defmodule Bucket do
