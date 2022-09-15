@@ -2,8 +2,7 @@
 
 ```elixir
 Mix.install([
-  {:dasie, git: "https://github.com/vorce/dasie.git"},
-  {:kino, "~> 0.6"}
+  {:dasie, git: "https://github.com/vorce/dasie.git"}
 ])
 ```
 

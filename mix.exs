@@ -30,7 +30,8 @@ defmodule Dasie.Mixfile do
     [
       {:excoveralls, "~> 0.14", only: :test},
       {:stream_data, "~> 0.4", only: :test},
-      {:dialyxir, "~> 1.0", only: [:dev], runtime: false}
+      {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
+      {:kino, "~> 0.6"}
     ]
   end
 end
