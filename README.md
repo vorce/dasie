@@ -1,4 +1,4 @@
-![Build status](https://github.com/vorce/dasie/actions/workflows/action.yml/badge.svg) [![Coverage Status](https://coveralls.io/repos/github/vorce/dasie/badge.svg?branch=master)](https://coveralls.io/github/vorce/dasie?branch=master)
+![Build status](https://github.com/vorce/dasie/actions/workflows/action.yml/badge.svg) [![Coverage Status](https://coveralls.io/repos/github/vorce/dasie/badge.svg?branch=master)](https://coveralls.io/github/vorce/dasie?branch=master) [![Casual Maintenance Intended](https://casuallymaintained.tech/badge.svg)](https://casuallymaintained.tech/)
 
 # Dasie
 
